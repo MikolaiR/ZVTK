@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,11 +17,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $adminRole = Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => 'web',
         ]);
+
+        /** @var User $admin */
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@tutweb.by'],
+            [
+                'name' => 'Admin',
+                'password' => '1234qwer',
+            ]
+        );
+
+        if (! $admin->hasRole('admin')) {
+            $admin->assignRole($adminRole);
+        }
     }
 }
