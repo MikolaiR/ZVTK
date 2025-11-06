@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AutoBrandController;
 use App\Http\Controllers\Admin\AutoModelController;
+use App\Http\Controllers\Admin\CompanyController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -53,4 +54,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/auto-models/{model}', [AutoModelController::class, 'update'])->name('auto.models.update');
     Route::delete('/auto-models/{model}', [AutoModelController::class, 'destroy'])->name('auto.models.destroy');
     Route::post('/auto-models/{id}/restore', [AutoModelController::class, 'restore'])->name('auto.models.restore');
+
+    // Companies
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+    Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
+    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+    Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+    Route::post('/companies/{id}/restore', [CompanyController::class, 'restore'])->name('companies.restore');
 });

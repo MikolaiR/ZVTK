@@ -9,6 +9,7 @@
             <Link href="/admin/users" class="hover:text-gray-900">Пользователи</Link>
             <Link href="/admin/auto-brands" class="hover:text-gray-900">Бренды</Link>
             <Link href="/admin/auto-models" class="hover:text-gray-900">Модели</Link>
+            <Link href="/admin/companies" class="hover:text-gray-900">Компании</Link>
           </nav>
         </div>
         <div class="flex items-center gap-4 text-sm">
