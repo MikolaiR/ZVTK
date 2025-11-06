@@ -15,8 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->integer('price')->nullable();
+            $table->foreignId('parking_id') ->constrained()->cascadeOnDelete();
+            $table->date('date_start');
+            $table->date('date_end')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['parking_id', 'date_start']);
+            $table->index(['parking_id', 'date_end']);
+            $table->index(['parking_id', 'price']);
         });
     }
 

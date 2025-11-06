@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create('auto_sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('auto_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->dateTime('sold_at');
-            $table->decimal('price', 12, 2);
             $table->foreignId('sold_by_user_id')->constrained('users')->cascadeOnDelete();
             $table->text('note')->nullable();
             $table->timestamps();
