@@ -7,6 +7,8 @@
           <nav class="hidden md:flex items-center gap-4 text-sm text-gray-600">
             <Link href="/admin" class="hover:text-gray-900">Главная</Link>
             <Link href="/admin/users" class="hover:text-gray-900">Пользователи</Link>
+            <Link href="/admin/auto-brands" class="hover:text-gray-900">Бренды</Link>
+            <Link href="/admin/auto-models" class="hover:text-gray-900">Модели</Link>
           </nav>
         </div>
         <div class="flex items-center gap-4 text-sm">

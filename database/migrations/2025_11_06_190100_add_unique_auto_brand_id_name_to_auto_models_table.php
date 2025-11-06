@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('auto_brands', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->timestamps();
-            $table->softDeletes();
+        Schema::table('auto_models', function (Blueprint $table) {
+            $table->unique(['auto_brand_id', 'name'], 'auto_models_brand_name_unique');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('auto_brands');
+        Schema::table('auto_models', function (Blueprint $table) {
+            $table->dropUnique('auto_models_brand_name_unique');
+        });
     }
 };
