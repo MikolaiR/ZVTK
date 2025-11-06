@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AutoBrandController;
 use App\Http\Controllers\Admin\AutoModelController;
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\ColorController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -63,4 +64,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
     Route::post('/companies/{id}/restore', [CompanyController::class, 'restore'])->name('companies.restore');
+
+    // Colors
+    Route::get('/colors', [ColorController::class, 'index'])->name('colors.index');
+    Route::get('/colors/create', [ColorController::class, 'create'])->name('colors.create');
+    Route::post('/colors', [ColorController::class, 'store'])->name('colors.store');
+    Route::get('/colors/{color}/edit', [ColorController::class, 'edit'])->name('colors.edit');
+    Route::put('/colors/{color}', [ColorController::class, 'update'])->name('colors.update');
+    Route::delete('/colors/{color}', [ColorController::class, 'destroy'])->name('colors.destroy');
+    Route::post('/colors/{id}/restore', [ColorController::class, 'restore'])->name('colors.restore');
 });
