@@ -6,7 +6,7 @@
           <h1 class="text-lg font-semibold">Admin</h1>
           <nav class="hidden md:flex items-center gap-4 text-sm text-gray-600">
             <Link href="/admin" class="hover:text-gray-900">Главная</Link>
-            <!-- Добавим разделы позже -->
+            <Link href="/admin/users" class="hover:text-gray-900">Пользователи</Link>
           </nav>
         </div>
         <div class="flex items-center gap-4 text-sm">

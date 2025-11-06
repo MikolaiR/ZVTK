@@ -17,24 +17,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        $adminRole = Role::firstOrCreate([
-            'name' => 'admin',
-            'guard_name' => 'web',
+        $this->call([
+            RoleAndPermissionSeeder::class,
+            UserSeeder::class,
         ]);
-
-        /** @var User $admin */
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@tutweb.by'],
-            [
-                'name' => 'Admin',
-                'password' => '1234qwer',
-            ]
-        );
-
-        if (! $admin->hasRole('admin')) {
-            $admin->assignRole($adminRole);
-        }
     }
 }
