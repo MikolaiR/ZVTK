@@ -40,8 +40,10 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerateToken();
             return back()->withErrors(['email' => __('Your account is inactive.')]);
         }
-
-        return redirect()->intended(route('admin.home'));
+        if ($request->user()->hasRole('admin')) {
+            return redirect()->intended(route('admin.home'));
+        }
+        return redirect()->intended(route('home'));
     }
 
     /**
