@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -109,6 +110,91 @@ class UserController extends Controller
     {
         $user = User::withTrashed()->findOrFail($id);
         $user->restore();
-        return back()->with('success', __('User restored.'));
+        return redirect()->route('admin.users.index')->with('success', __('User restored.'));
+    }
+
+    public function create(): Response
+    {
+        $roles = Role::query()->orderBy('name')->get(['id', 'name'])->pluck('name');
+        return Inertia::render('Admin/Users/Create', [
+            'roles' => $roles,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:6'],
+            'is_active' => ['sometimes', 'boolean'],
+            'roles' => ['array'],
+            'roles.*' => ['string'],
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'is_active' => (bool) ($data['is_active'] ?? true),
+        ]);
+
+        if (!empty($data['roles'])) {
+            $user->syncRoles($data['roles']);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', __('User created.'));
+    }
+
+    public function edit(User $user): Response
+    {
+        $roles = Role::query()->orderBy('name')->get(['id', 'name'])->pluck('name');
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'is_active' => (bool) $user->is_active,
+                'roles' => $user->roles()->pluck('name')->values(),
+            ],
+            'roles' => $roles,
+        ]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        if ($user->trashed()) {
+            return back()->withErrors(['message' => __('Cannot update deleted user.')]);
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:6'],
+            'is_active' => ['required', 'boolean'],
+            'roles' => ['array'],
+            'roles.*' => ['string'],
+        ]);
+
+        if ($request->user()->id === $user->id && isset($data['is_active']) && $data['is_active'] === false) {
+            return back()->withErrors(['message' => __('You cannot deactivate your own account.')]);
+        }
+
+        $payload = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'is_active' => (bool) $data['is_active'],
+        ];
+        if (!empty($data['password'])) {
+            $payload['password'] = $data['password'];
+        }
+
+        $user->update($payload);
+
+        if (isset($data['roles'])) {
+            $user->syncRoles($data['roles']);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', __('User updated.'));
     }
 }

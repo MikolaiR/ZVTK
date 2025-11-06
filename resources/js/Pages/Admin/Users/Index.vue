@@ -31,6 +31,9 @@
         <div v-if="flash.error" class="text-red-600">{{ flash.error }}</div>
         <div v-if="errors?.message" class="text-red-600">{{ errors.message }}</div>
       </div>
+      <div class="self-end">
+        <Link href="/admin/users/create" class="inline-flex items-center rounded-md bg-gray-900 text-white px-3 py-2 text-sm hover:bg-black">Создать пользователя</Link>
+      </div>
     </div>
 
     <div class="overflow-x-auto rounded-lg border bg-white">
@@ -68,6 +71,7 @@
             </td>
             <td class="px-4 py-2 text-right">
               <div class="inline-flex items-center gap-2">
+                <Link :href="`/admin/users/${u.id}/edit`" class="rounded-md border px-2 py-1 text-xs hover:bg-gray-50">Редактировать</Link>
                 <button
                   v-if="!u.deleted_at"
                   @click="toggleActive(u.id)"
@@ -114,7 +118,7 @@
 
 <script setup>
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
-import { router, usePage } from '@inertiajs/vue3'
+import { router, usePage, Link } from '@inertiajs/vue3'
 import { reactive, onMounted, watch, computed } from 'vue'
 
 const page = usePage()
