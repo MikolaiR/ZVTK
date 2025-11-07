@@ -1,18 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AutoBrandController;
 use App\Http\Controllers\Admin\AutoModelController;
-use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\ProviderController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Api\BrandAndModelController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Client\AutoController;
+use App\Http\Controllers\Client\ProfileController;
+use App\Services\Client\HomeServise;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/', [HomeServise::class, 'index'])->name('home');
+
+    Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
+
+    // Create Auto (manager/admin)
+    Route::middleware('permission:create_auto')->group(function () {
+        Route::get('/autos/create', [AutoController::class, 'create'])->name('autos.create');
+        Route::post('/autos', [AutoController::class, 'store'])->name('autos.store');
+
+        Route::get('/api/brands/{brand}/models', [BrandAndModelController::class, 'getModels'])->name('api.brand.models');
+    });
+
+    Route::get('/profile', ProfileController::class)->name('profile.show');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

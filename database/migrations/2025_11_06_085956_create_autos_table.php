@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('vin')->unique();
             $table->date('year')->nullable();
             $table->integer('price')->nullable();
+            $table->smallInteger('status')->default(1); // Enum Statuses
             $table->timestamps();
             $table->softDeletes();
         });

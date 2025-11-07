@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Auto extends Model
+class Auto extends Model implements HasMedia
 {
-    use SoftDeletes;
+    use SoftDeletes, InteractsWithMedia;
+
+    protected $guarded = [];
 
     public function locationPeriods(): HasMany
     {
@@ -26,5 +30,12 @@ class Auto extends Model
     public function sales(): HasMany
     {
         return $this->hasMany(AutoSale::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photos')->useFallbackUrl('/images/not_photo.png');
+        $this->addMediaCollection('videos');
+        $this->addMediaCollection('documents');
     }
 }
