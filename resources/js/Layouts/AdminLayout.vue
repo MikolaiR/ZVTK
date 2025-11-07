@@ -11,6 +11,7 @@
             <Link href="/admin/auto-models" class="hover:text-gray-900">Модели</Link>
             <Link href="/admin/companies" class="hover:text-gray-900">Компании</Link>
             <Link href="/admin/colors" class="hover:text-gray-900">Цвета</Link>
+            <Link href="/admin/providers" class="hover:text-gray-900">Поставщики</Link>
           </nav>
         </div>
         <div class="flex items-center gap-4 text-sm">
