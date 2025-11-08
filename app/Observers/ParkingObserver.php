@@ -7,9 +7,9 @@ use App\Models\Parking;
 class ParkingObserver
 {
 
-    protected function setTitle(Parking $parking): void
+    protected function setName(Parking $parking): void
     {
-        $parking->title = $parking->company->name . ' ' . $parking->address;
+        $parking->name = $parking->company->name . ' ' . $parking->address;
         $parking->save();
     }
 
@@ -18,7 +18,7 @@ class ParkingObserver
      */
     public function created(Parking $parking): void
     {
-        $this->setTitle($parking);
+        $this->setName($parking);
     }
 
     /**
@@ -26,7 +26,7 @@ class ParkingObserver
      */
     public function updated(Parking $parking): void
     {
-        $this->setTitle($parking);
+        $this->setName($parking);
     }
 
     /**
