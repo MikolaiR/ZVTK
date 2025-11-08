@@ -14,6 +14,6 @@ class AutoModel extends Model
 
     public function brand(): BelongsTo
     {
-        return $this->belongsTo(AutoBrand::class);
+        return $this->belongsTo(AutoBrand::class, 'auto_brand_id', 'id');
     }
 }

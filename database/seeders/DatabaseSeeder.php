@@ -33,7 +33,8 @@ class DatabaseSeeder extends Seeder
             SenderSeeder::class,
             ParkingSeeder::class,
             PriceSeeder::class,
-            CustomerSeeder::class
+            CustomerSeeder::class,
+            AutoSeeder::class,
         ]);
     }
 }

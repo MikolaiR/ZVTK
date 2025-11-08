@@ -3,6 +3,9 @@
 namespace App\Observers;
 
 use App\Models\Auto;
+use App\Models\Sender;
+use App\Models\Provider;
+use Illuminate\Support\Facades\Auth;
 
 class AutoObserver
 {
@@ -13,12 +16,22 @@ class AutoObserver
         $auto->save();
     }
 
+    protected function setProviderAndSender(Auto $auto): void
+    {
+        $user = Auth::user();
+        $auto->provider_id = Provider::where('user_id', $user->id)->first()->id;
+        $auto->sender_id =  Sender::where('user_id', $user->id)->first()->id;
+        $auto->company_id = $user->company_id;
+        $auto->save();
+    }
+
     /**
      * Handle the Auto "created" event.
      */
     public function created(Auto $auto): void
     {
         $this->setTitle($auto);
+        $this->setProviderAndSender($auto);
     }
 
     /**

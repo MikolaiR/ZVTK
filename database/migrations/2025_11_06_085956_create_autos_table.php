@@ -26,6 +26,8 @@ return new class extends Migration
             $table->smallInteger('status')->default(1); // Enum Statuses
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['status', 'departure_date', 'vin']);
         });
     }
 
