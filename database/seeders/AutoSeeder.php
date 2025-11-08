@@ -80,43 +80,40 @@ class AutoSeeder extends Seeder
                 $started = now()->subDays(rand(5, 30))->startOfDay()->addHours(rand(0, 12));
                 $lastPeriod = null;
 
-                $lastPeriod = $this->createLocationPeriod(
-                    $auto,
-                    $provider,
-                    $started,
-                    acceptedBy: $users->random()
-                );
+                $sequence = match ($finalStatus) {
+                    Statuses::Delivery => [Statuses::Delivery],
+                    Statuses::DeliveryToParking => [Statuses::Delivery, Statuses::DeliveryToParking],
+                    Statuses::Parking => [Statuses::Delivery, Statuses::DeliveryToParking, Statuses::Parking],
+                    Statuses::Customer, Statuses::Sale => [Statuses::Delivery, Statuses::DeliveryToParking, Statuses::Parking, Statuses::Customer],
+                };
 
-                if (in_array($finalStatus, [Statuses::DeliveryToParking, Statuses::Parking, Statuses::Sale, Statuses::Customer], true)) {
-                    $started = (clone $started)->addHours(rand(8, 36));
-                    $this->endPeriod($lastPeriod, (clone $started)->subHour());
+                $parking = $parkings->random();
+                $customer = $customers->random();
+
+                foreach ($sequence as $index => $statusStep) {
+                    if ($index > 0) {
+                        $nextStart = (clone $started)->addHours(match ($statusStep) {
+                            Statuses::DeliveryToParking => rand(8, 36),
+                            Statuses::Parking => rand(4, 24),
+                            Statuses::Customer => rand(12, 72),
+                            default => rand(4, 24),
+                        });
+                        $this->endPeriod($lastPeriod, (clone $nextStart)->subHour());
+                        $started = $nextStart;
+                    }
+
+                    $location = match ($statusStep) {
+                        Statuses::Delivery => $sender,
+                        Statuses::DeliveryToParking => $provider,
+                        Statuses::Parking => $parking,
+                        Statuses::Customer => $customer,
+                        default => $sender,
+                    };
+
                     $lastPeriod = $this->createLocationPeriod(
                         $auto,
-                        $sender,
-                        $started,
-                        acceptedBy: $users->random()
-                    );
-                }
-
-                if (in_array($finalStatus, [Statuses::Parking, Statuses::Sale], true)) {
-                    $parking = $parkings->random();
-                    $started = (clone $started)->addHours(rand(4, 24));
-                    $this->endPeriod($lastPeriod, (clone $started)->subHour());
-                    $lastPeriod = $this->createLocationPeriod(
-                        $auto,
-                        $parking,
-                        $started,
-                        acceptedBy: $users->random()
-                    );
-                }
-
-                if (in_array($finalStatus, [Statuses::Customer, Statuses::Sale], true)) {
-                    $customer = $customers->random();
-                    $started = (clone $started)->addHours(rand(12, 72));
-                    $this->endPeriod($lastPeriod, (clone $started)->subHour());
-                    $lastPeriod = $this->createLocationPeriod(
-                        $auto,
-                        $customer,
+                        $location,
+                        $statusStep,
                         $started,
                         acceptedBy: $users->random()
                     );
@@ -159,12 +156,18 @@ class AutoSeeder extends Seeder
         });
     }
 
-    protected function createLocationPeriod(Auto $auto, object $location, Carbon $startedAt, ?User $acceptedBy = null): AutoLocationPeriod
+    protected function createLocationPeriod(Auto $auto, object $location, Statuses $status, Carbon $startedAt, ?User $acceptedBy = null): AutoLocationPeriod
     {
+        $expectedClass = $status->connectionWithModel();
+        if (!($location instanceof $expectedClass)) {
+            throw new \InvalidArgumentException('Location class ' . get_class($location) . ' does not match expected ' . $expectedClass . ' for status ' . $status->name);
+        }
+
         return AutoLocationPeriod::query()->create([
             'auto_id' => $auto->id,
-            'location_type' => get_class($location),
+            'location_type' => $expectedClass,
             'location_id' => $location->id,
+            'status' => $status->value,
             'started_at' => $startedAt,
             'accepted_by_user_id' => $acceptedBy?->id,
             'acceptance_note' => 'Seeded movement to ' . class_basename($location) . ' #' . $location->id,

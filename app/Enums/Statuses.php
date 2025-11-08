@@ -32,13 +32,14 @@ enum Statuses: int
         };
     }
 
-    // public function models(): string
-    // {
-    //     return match ($this) {
-    //         self::Delivery => 'App/Models/Auto',
-    //         self::Customer => 'App/Models/Customer',
-    //         self::Parking => 'App/Models/Parking',
-    //         self::Sale => 'App/Models/Sale',
-    //     };
-    // }
+    public function connectionWithModel(): string
+    {
+        return match ($this) {
+            self::Delivery => 'App\Models\Sender',
+            self::Customer => 'App\Models\Customer',
+            self::DeliveryToParking => 'App\Models\Provider',
+            self::Parking => 'App\Models\Parking',
+            self::Sale => 'App\Models\Sale',
+        };
+    }
 }

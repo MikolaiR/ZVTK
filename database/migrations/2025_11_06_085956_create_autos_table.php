@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Statuses;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -23,7 +24,7 @@ return new class extends Migration
             $table->string('vin')->unique();
             $table->date('year')->nullable();
             $table->integer('price')->nullable();
-            $table->smallInteger('status')->default(1); // Enum Statuses
+            $table->enum('status', Statuses::cases())->default(Statuses::Delivery);
             $table->timestamps();
             $table->softDeletes();
 

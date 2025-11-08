@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Statuses;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->dateTime('ended_at')->nullable();
             $table->foreignId('accepted_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->text('acceptance_note')->nullable();
+            $table->enum('status', Statuses::cases())->default(Statuses::Delivery);
             $table->timestamps();
             $table->softDeletes();
 
