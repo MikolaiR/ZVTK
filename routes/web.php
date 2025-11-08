@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/brands/{brand}/models', [BrandAndModelController::class, 'getModels'])->name('api.brand.models');
     });
 
+    Route::get('/autos/{auto}', [AutoController::class, 'show'])->name('autos.show');
+
     Route::get('/profile', ProfileController::class)->name('profile.show');
 });
 

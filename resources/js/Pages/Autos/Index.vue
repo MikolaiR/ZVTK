@@ -13,7 +13,9 @@
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="a in autos.data" :key="a.id" class="hover:bg-gray-50">
-              <td class="px-4 py-2">{{ a.title }}</td>
+              <td class="px-4 py-2">
+                <Link :href="`/autos/${a.id}`" class="text-gray-900 hover:underline">{{ a.title }}</Link>
+              </td>
               <td class="px-4 py-2 text-gray-600">{{ a.vin }}</td>
             </tr>
             <tr v-if="!autos.data.length">

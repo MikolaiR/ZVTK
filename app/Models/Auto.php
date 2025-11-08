@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,6 +31,31 @@ class Auto extends Model implements HasMedia
     public function sales(): HasMany
     {
         return $this->hasMany(AutoSale::class);
+    }
+
+    public function autoModel(): BelongsTo
+    {
+        return $this->belongsTo(AutoModel::class, 'auto_model_id');
+    }
+
+    public function color(): BelongsTo
+    {
+        return $this->belongsTo(Color::class);
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function sender(): BelongsTo
+    {
+        return $this->belongsTo(Sender::class);
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(Provider::class);
     }
 
     public function registerMediaCollections(): void
