@@ -9,6 +9,10 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\AutoBrandAndModelSeeder;
 use Database\Seeders\ColorSeeder;
+use Database\Seeders\ProviderSeeder;
+use Database\Seeders\SenderSeeder;
+use Database\Seeders\ParkingSeeder;
+use Database\Seeders\PriceSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,6 +29,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AutoBrandAndModelSeeder::class,
             ColorSeeder::class,
+            ProviderSeeder::class,
+            SenderSeeder::class,
+            ParkingSeeder::class,
+            PriceSeeder::class,
+            CustomerSeeder::class
         ]);
     }
 }
