@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('auto_models', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('auto_brand_id')->constrained()->cascadeOnDelete();
+            $table->string('auto_brand_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });
