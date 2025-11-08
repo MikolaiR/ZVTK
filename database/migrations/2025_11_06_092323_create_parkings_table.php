@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('parkings', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->nullable();
             $table->string('address');
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();

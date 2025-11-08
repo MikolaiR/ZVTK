@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('autos', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->nullable();
             $table->date('departure_date')->nullable();
             $table->foreignId('auto_model_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('color_id')->nullable()->constrained()->nullOnDelete();
