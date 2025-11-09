@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -15,6 +16,16 @@ class Auto extends Model implements HasMedia
     use SoftDeletes, InteractsWithMedia;
 
     protected $guarded = [];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('company_visibility', function (Builder $builder) {
+            $user = Auth::user();
+            if ($user && ! $user->hasRole('admin')) {
+                $builder->where('company_id', $user->company_id);
+            }
+        });
+    }
 
     public function locationPeriods(): HasMany
     {

@@ -23,9 +23,7 @@ class AutoController extends Controller
         $status = $request->integer('status');
 
         $query = Auto::query();
-        if (! $user->hasRole('admin')) {
-            $query->where('company_id', $user->company_id);
-        }
+
         if ($vin !== '') {
             $query->where('vin', 'like', "%{$vin}%");
         }
