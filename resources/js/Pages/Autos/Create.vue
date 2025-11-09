@@ -30,7 +30,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Цвет</label>
             <select v-model="form.color_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
               <option :value="null">Не выбран</option>
-              <option v-for="c in colors" :key="c.id" :value="c.id">{{ c.name }}</option>
+              <option v-for="c in colors" :key="c.id" :value="c.id" :style="{ '--clr': c.hex_code }"
+                      class="text-[var(--clr)]">{{ `${c.name} ${c.name_ru}` }}</option>
             </select>
             <p v-if="form.errors.color_id" class="mt-1 text-sm text-red-600">{{ form.errors.color_id }}</p>
           </div>
