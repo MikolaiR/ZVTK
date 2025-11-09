@@ -37,9 +37,9 @@ enum Statuses: int
         return match ($this) {
             self::Delivery => 'App\Models\Sender',
             self::Customer => 'App\Models\Customer',
-            self::DeliveryToParking => 'App\Models\Provider',
+            self::DeliveryToParking => 'App\Models\Parking',
             self::Parking => 'App\Models\Parking',
-            self::Sale => 'App\Models\Sale',
+            self::Sale => 'App\Models\AutoSale',
         };
     }
 }

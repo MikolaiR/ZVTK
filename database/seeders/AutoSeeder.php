@@ -104,8 +104,7 @@ class AutoSeeder extends Seeder
 
                     $location = match ($statusStep) {
                         Statuses::Delivery => $sender,
-                        Statuses::DeliveryToParking => $provider,
-                        Statuses::Parking => $parking,
+                        Statuses::DeliveryToParking, Statuses::Parking => $parking,
                         Statuses::Customer => $customer,
                         default => $sender,
                     };
