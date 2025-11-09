@@ -11,6 +11,6 @@ class BrandAndModelController extends Controller
 {
     public function getModels(AutoBrand $brand)
     {
-        return AutoModel::query()->where('brand_id', $brand->id)->select('id', 'name')->orderBy('name')->get();
+        return AutoModel::query()->where('auto_brand_id', $brand->id)->select('id', 'name')->orderBy('name')->get();
     }
 }

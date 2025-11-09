@@ -12,6 +12,12 @@ class AutoBrand extends Model
 
     protected $guarded = [];
 
+    protected function casts()
+    {
+        return [
+            'id' => 'string',
+        ];
+    }
     public function models(): HasMany
     {
         return $this->hasMany(AutoModel::class);
