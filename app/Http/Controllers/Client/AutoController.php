@@ -9,6 +9,8 @@ use App\Models\Auto;
 use App\Models\AutoBrand;
 use App\Models\AutoModel;
 use App\Models\Color;
+use App\Models\Customer;
+use App\Models\Parking;
 use App\Models\Provider;
 use App\Models\Sender;
 use Illuminate\Http\Request;
@@ -16,9 +18,14 @@ use Inertia\Inertia;
 
 class AutoController extends Controller
 {
+    protected $user;
+    public function __construct()
+    {
+        $this->user = auth()->user();
+    }
+
     public function index(Request $request)
     {
-        $user = $request->user();
         $vin = (string) $request->get('vin', '');
         $status = $request->integer('status');
 
@@ -54,8 +61,8 @@ class AutoController extends Controller
         }
 
         $auto->load([
-            'autoModel:id,auto_brand_id,name',
-            'autoModel.brand:id,name',
+            'model:id,auto_brand_id,name',
+            'model.brand:id,name',
             'color:id,name',
             'company:id,name',
             'sender:id,name',
@@ -110,6 +117,7 @@ class AutoController extends Controller
             'type' => $current->location_type,
             'type_label' => $mapTypeLabel($current->location_type),
             'name' => $current->location->name ?? ($current->location->title ?? null),
+            'location_id' => $current->location?->id,
             'status' => $current->status,
             'status_label' => Statuses::from((int) $current->status)->lable(),
             'started_at' => optional($current->started_at)->toDateTimeString(),
@@ -127,6 +135,7 @@ class AutoController extends Controller
                 'type' => $p->location_type,
                 'type_label' => $mapTypeLabel($p->location_type),
                 'name' => $p->location->name ?? ($p->location->title ?? null),
+                'location_id' => $p->location?->id,
                 'status' => $p->status,
                 'status_label' => Statuses::from((int) $p->status)->lable(),
                 'started_at' => optional($p->started_at)->toDateTimeString(),
@@ -147,7 +156,7 @@ class AutoController extends Controller
             'price' => $auto->price,
             'departure_date' => $auto->departure_date ? date('Y-m-d', strtotime((string) $auto->departure_date)) : null,
             'status' => $auto->status,
-            'status_label' => Statuses::from((int) $auto->status)->lable(),
+            'status_label' => Statuses::from($auto->status->value)->lable(),
             'brand' => $auto->autoModel->brand->name ?? null,
             'model' => $auto->autoModel->name ?? null,
             'color' => $auto->color->name ?? null,
@@ -167,8 +176,13 @@ class AutoController extends Controller
             'periods' => $periods,
         ];
 
+        $parkings = Parking::query()->select('id', 'name')->orderBy('name')->get();
+
+        $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
         return Inertia::render('Autos/Show', [
             'auto' => $payload,
+            'parkings' => $parkings,
+            'customers' => $customers,
         ]);
     }
 

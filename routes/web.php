@@ -9,16 +9,14 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\BrandAndModelController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\AutoController;
+use App\Http\Controllers\Client\AutoTransitionController;
 use App\Http\Controllers\Client\ProfileController;
-use App\Services\Client\HomeServise;
+use App\Services\Client\HomeService;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-
-
-
 Route::middleware('auth')->group(function () {
-    Route::get('/', [HomeServise::class, 'index'])->name('home');
+    Route::get('/', [HomeService::class, 'index'])->name('home');
 
     Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
 
@@ -31,6 +29,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/autos/{auto}', [AutoController::class, 'show'])->name('autos.show');
+    Route::post('/autos/{auto}/transitions', [AutoTransitionController::class, 'store'])->name('autos.transitions');
+    Route::get('/autos/{auto}/storage-cost', [AutoTransitionController::class, 'storageCost'])->name('autos.storage-cost');
 
     Route::get('/profile', ProfileController::class)->name('profile.show');
 });

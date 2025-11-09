@@ -12,6 +12,8 @@ class AutoModel extends Model
 
     protected $guarded = [];
 
+    protected $with = ['brand'];
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(AutoBrand::class, 'auto_brand_id', 'id');

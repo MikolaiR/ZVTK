@@ -55,7 +55,7 @@ class Auto extends Model implements HasMedia
         return $this->hasMany(AutoSale::class);
     }
 
-    public function autoModel(): BelongsTo
+    public function model(): BelongsTo
     {
         return $this->belongsTo(AutoModel::class, 'auto_model_id');
     }

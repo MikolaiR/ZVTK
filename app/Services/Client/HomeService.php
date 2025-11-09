@@ -6,7 +6,7 @@ use App\Enums\Statuses;
 use Illuminate\Http\Client\Request;
 use Inertia\Inertia;
 
-class HomeServise
+class HomeService
 {
 
     public function index()

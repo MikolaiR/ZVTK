@@ -12,7 +12,7 @@ class AutoObserver
 
     protected function setTitle(Auto $auto): void
     {
-        $auto->title = $auto->brand->name . ' ' . $auto->model->name . ' ' . $auto->vin;
+        $auto->title = $auto->model->brand->name . ' ' . $auto->model->name . ' ' . $auto->vin;
     }
 
     protected function setProviderAndSender(Auto $auto): void
