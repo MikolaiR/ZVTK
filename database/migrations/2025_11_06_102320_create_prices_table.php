@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('name');
             $table->integer('price')->nullable();
             $table->foreignId('parking_id') ->constrained()->cascadeOnDelete();
             $table->date('date_start');

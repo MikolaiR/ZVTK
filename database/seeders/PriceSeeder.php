@@ -18,7 +18,7 @@ class PriceSeeder extends Seeder
 
         foreach ($parkings as $parking) {
             Price::create([
-                'title' => 'Price for ' . $parking->title,
+                'name' => 'Price for ' . ($parking->name ?? ('Parking #'.$parking->id)),
                 'price' => rand(2, 10),
                 'parking_id' => $parking->id,
                 'date_start' => now(),

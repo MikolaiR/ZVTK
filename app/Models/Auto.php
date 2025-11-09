@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\Statuses;
+use App\Observers\AutoObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,12 +15,19 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+#[ObservedBy([AutoObserver::class])]
 class Auto extends Model implements HasMedia
 {
     use SoftDeletes, InteractsWithMedia;
 
     protected $guarded = [];
 
+    protected function casts()
+    {
+        return [
+            'status' => Statuses::class
+        ];
+    }
     protected static function booted(): void
     {
         static::addGlobalScope('company_visibility', function (Builder $builder) {

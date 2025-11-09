@@ -10,7 +10,6 @@ class ParkingObserver
     protected function setName(Parking $parking): void
     {
         $parking->name = $parking->company->name . ' ' . $parking->address;
-        $parking->save();
     }
 
     /**

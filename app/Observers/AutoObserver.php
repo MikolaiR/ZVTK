@@ -13,7 +13,6 @@ class AutoObserver
     protected function setTitle(Auto $auto): void
     {
         $auto->title = $auto->brand->name . ' ' . $auto->model->name . ' ' . $auto->vin;
-        $auto->save();
     }
 
     protected function setProviderAndSender(Auto $auto): void
@@ -22,7 +21,6 @@ class AutoObserver
         $auto->provider_id = Provider::where('user_id', $user->id)->first()->id;
         $auto->sender_id =  Sender::where('user_id', $user->id)->first()->id;
         $auto->company_id = $user->company_id;
-        $auto->save();
     }
 
     /**

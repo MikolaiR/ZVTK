@@ -10,7 +10,6 @@ class ProviderObserver
     protected function setName(Provider $provider): void
     {
         $provider->name = $provider->company->name;
-        $provider->save();
     }
 
     /**

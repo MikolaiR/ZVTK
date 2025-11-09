@@ -10,7 +10,6 @@ class SenderObserver
     protected function setName(Sender $sender): void
     {
         $sender->name = $sender->company->name;
-        $sender->save();
     }
     /**
      * Handle the Sender "created" event.

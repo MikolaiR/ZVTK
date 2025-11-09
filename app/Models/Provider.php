@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\ProviderObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([ProviderObserver::class])]
 class Provider extends Model
 {
     use SoftDeletes;
