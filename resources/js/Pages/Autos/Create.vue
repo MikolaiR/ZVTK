@@ -140,6 +140,22 @@ const syncUploadsToForm = () => {
 
 const submit = () => {
   syncUploadsToForm()
-  form.post('/autos', { forceFormData: true })
+  form
+    .transform((data) => {
+      const fd = new FormData()
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length && value[0] instanceof File) {
+          value.forEach((f) => fd.append(`${key}[]`, f))
+        } else if (Array.isArray(value)) {
+          value.forEach((v) => fd.append(`${key}[]`, v ?? ''))
+        } else if (value === null || value === undefined) {
+          fd.append(key, '')
+        } else {
+          fd.append(key, value)
+        }
+      })
+      return fd
+    })
+    .post('/autos')
 }
 </script>

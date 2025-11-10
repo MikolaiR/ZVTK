@@ -4,7 +4,7 @@
     <div class="border-2 border-dashed rounded-lg p-4 bg-white text-center" @dragover.prevent @drop.prevent="onDrop">
       <div class="text-sm text-gray-600">Перетащите файлы сюда или</div>
       <button type="button" class="mt-2 rounded-md border px-3 py-1.5 hover:bg-gray-50" @click="openPicker">Выбрать файлы</button>
-      <input ref="fileInput" type="file" multiple class="hidden" @change="onInputChange" />
+      <input ref="fileInput" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx" class="hidden" @change="onInputChange" />
 
       <div v-if="allFiles.length" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         <div v-for="(f,i) in allFiles" :key="i" class="relative">
@@ -86,7 +86,8 @@ const onInputChange = (e) => {
   emitGroup('pick-file', 'photos', g.photos)
   emitGroup('pick-file', 'videos', g.videos)
   emitGroup('pick-file', 'documents', g.documents)
-  e.target.value = ''
+  // clear the real input so the same files can be re-selected and to avoid stale state
+  if (fileInput.value) fileInput.value.value = ''
 }
 
 const onDrop = (e) => {
