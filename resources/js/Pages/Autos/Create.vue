@@ -65,63 +65,7 @@
           </div>
         </div>
 
-        <!-- Photos -->
-        <section>
-          <h2 class="text-base font-medium mb-2">Фотографии</h2>
-          <div
-            class="border-2 border-dashed rounded-lg p-4 bg-white"
-            @dragover.prevent
-            @drop.prevent="onDrop($event, 'photos')"
-          >
-            <div class="text-sm text-gray-600">Перетащите файлы сюда или выберите</div>
-            <input ref="photosInput" type="file" accept="image/*" multiple class="hidden" @change="onFilesSelected($event, 'photos')" />
-            <button type="button" class="mt-2 rounded-md border px-3 py-1.5 hover:bg-gray-50" @click="() => photosInput.click()">Выбрать файлы</button>
-
-            <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              <div v-for="(file, idx) in form.photos" :key="idx" class="relative group">
-                <img :src="getPreview(file)" class="h-28 w-full object-cover rounded-md border" />
-                <button type="button" class="absolute top-1 right-1 rounded-md bg-white/90 border px-2 py-0.5 text-xs shadow hover:bg-white" @click="removeFile('photos', idx)">Удалить</button>
-              </div>
-            </div>
-            <p v-if="form.errors['photos.0']" class="mt-2 text-sm text-red-600">{{ form.errors['photos.0'] }}</p>
-          </div>
-        </section>
-
-        <!-- Videos -->
-        <section>
-          <h2 class="text-base font-medium mb-2">Видео</h2>
-          <div class="border-2 border-dashed rounded-lg p-4 bg-white" @dragover.prevent @drop.prevent="onDrop($event, 'videos')">
-            <div class="text-sm text-gray-600">Перетащите файлы сюда или выберите</div>
-            <input ref="videosInput" type="file" accept="video/*" multiple class="hidden" @change="onFilesSelected($event, 'videos')" />
-            <button type="button" class="mt-2 rounded-md border px-3 py-1.5 hover:bg-gray-50" @click="() => videosInput.click()">Выбрать файлы</button>
-
-            <ul class="mt-3 space-y-2">
-              <li v-for="(file, idx) in form.videos" :key="idx" class="flex items-center justify-between rounded-md border p-2 text-sm">
-                <span class="truncate mr-3">{{ file.name }}</span>
-                <button type="button" class="rounded-md border px-2 py-0.5 hover:bg-gray-50" @click="removeFile('videos', idx)">Удалить</button>
-              </li>
-            </ul>
-            <p v-if="form.errors['videos.0']" class="mt-2 text-sm text-red-600">{{ form.errors['videos.0'] }}</p>
-          </div>
-        </section>
-
-        <!-- Documents -->
-        <section>
-          <h2 class="text-base font-medium mb-2">Документы</h2>
-          <div class="border-2 border-dashed rounded-lg p-4 bg-white" @dragover.prevent @drop.prevent="onDrop($event, 'documents')">
-            <div class="text-sm text-gray-600">Перетащите файлы сюда или выберите</div>
-            <input ref="docsInput" type="file" multiple class="hidden" @change="onFilesSelected($event, 'documents')" />
-            <button type="button" class="mt-2 rounded-md border px-3 py-1.5 hover:bg-gray-50" @click="() => docsInput.click()">Выбрать файлы</button>
-
-            <ul class="mt-3 space-y-2">
-              <li v-for="(file, idx) in form.documents" :key="idx" class="flex items-center justify-between rounded-md border p-2 text-sm">
-                <span class="truncate mr-3">{{ file.name }}</span>
-                <button type="button" class="rounded-md border px-2 py-0.5 hover:bg-gray-50" @click="removeFile('documents', idx)">Удалить</button>
-              </li>
-            </ul>
-            <p v-if="form.errors['documents.0']" class="mt-2 text-sm text-red-600">{{ form.errors['documents.0'] }}</p>
-          </div>
-        </section>
+        <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
 
         <div class="flex items-center gap-3">
           <button type="submit" :disabled="form.processing" class="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black disabled:opacity-50">Добавить</button>
@@ -135,8 +79,9 @@
 <script setup>
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
+import Uploads from '../../Components/Uploads.vue'
 import axios from 'axios'
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, reactive } from 'vue'
 
 const props = defineProps({
   brands: { type: Array, required: true },
@@ -159,9 +104,7 @@ const form = useForm({
   documents: [],
 })
 
-const photosInput = ref(null)
-const videosInput = ref(null)
-const docsInput = ref(null)
+const upload = reactive({ photos: [], videos: [], documents: [] })
 
 const onBrandChange = async () => {
   form.auto_model_id = null
@@ -173,7 +116,7 @@ const onBrandChange = async () => {
 
 const appendFiles = (kind, fileList) => {
   const arr = Array.from(fileList || [])
-  form[kind] = [...form[kind], ...arr]
+  upload[kind] = [...upload[kind], ...arr]
 }
 
 const onFilesSelected = (e, kind) => {
@@ -185,20 +128,18 @@ const onDrop = (e, kind) => {
   appendFiles(kind, e.dataTransfer.files)
 }
 
-const getPreview = (file) => URL.createObjectURL(file)
-
 const removeFile = (kind, idx) => {
-  form[kind].splice(idx, 1)
+  upload[kind].splice(idx, 1)
 }
 
-onBeforeUnmount(() => {
-  // best-effort: revoke previews that may be around
-  ;['photos'].forEach((kind) => {
-    form[kind].forEach((f) => URL.revokeObjectURL && URL.revokeObjectURL(f.preview || ''))
-  })
-})
+const syncUploadsToForm = () => {
+  form.photos = upload.photos
+  form.videos = upload.videos
+  form.documents = upload.documents
+}
 
 const submit = () => {
+  syncUploadsToForm()
   form.post('/autos', { forceFormData: true })
 }
 </script>
