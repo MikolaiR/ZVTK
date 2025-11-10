@@ -75,26 +75,37 @@ class AutoController extends Controller
             },
         ]);
 
-        $photos = $auto->getMedia('photos')->map(function ($m) {
+        $makeUrl = function ($m) {
+            try {
+                if ($m->disk === 'local') {
+                    return $m->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
+                }
+            } catch (\Throwable $e) {
+                // fallback below
+            }
+            return $m->getUrl();
+        };
+
+        $photos = $auto->getMedia('photos')->map(function ($m) use ($makeUrl) {
             return [
                 'id' => $m->id,
-                'url' => $m->getUrl(),
+                'url' => $makeUrl($m),
                 'name' => $m->name,
                 'file_name' => $m->file_name,
             ];
         })->values();
-        $videos = $auto->getMedia('videos')->map(function ($m) {
+        $videos = $auto->getMedia('videos')->map(function ($m) use ($makeUrl) {
             return [
                 'id' => $m->id,
-                'url' => $m->getUrl(),
+                'url' => $makeUrl($m),
                 'name' => $m->name,
                 'file_name' => $m->file_name,
             ];
         })->values();
-        $documents = $auto->getMedia('documents')->map(function ($m) {
+        $documents = $auto->getMedia('documents')->map(function ($m) use ($makeUrl) {
             return [
                 'id' => $m->id,
-                'url' => $m->getUrl(),
+                'url' => $makeUrl($m),
                 'name' => $m->name,
                 'file_name' => $m->file_name,
             ];

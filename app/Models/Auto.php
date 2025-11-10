@@ -82,9 +82,9 @@ class Auto extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('photos')->useFallbackUrl('/images/not_photo.png');
-        $this->addMediaCollection('videos');
-        $this->addMediaCollection('documents');
+        $this->addMediaCollection('photos')->useFallbackUrl('/images/not_photo.png')->useDisk('local');
+        $this->addMediaCollection('videos')->useDisk('local');
+        $this->addMediaCollection('documents')->useDisk('local');
     }
 
 }
