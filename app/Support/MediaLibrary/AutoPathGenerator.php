@@ -4,6 +4,7 @@ namespace App\Support\MediaLibrary;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
+use Illuminate\Support\Facades\Storage;
 
 class AutoPathGenerator implements PathGenerator
 {
@@ -20,7 +21,16 @@ class AutoPathGenerator implements PathGenerator
      */
     public function getPathForConversions(Media $media): string
     {
-        return $this->base($media).'conversions/';
+        $relative = $this->base($media).'conversions/';
+        try {
+            $absolute = Storage::disk($media->disk)->path($relative);
+            if (!is_dir($absolute)) {
+                @mkdir($absolute, 0777, true);
+                @chmod($absolute, 0777);
+            }
+        } catch (\Throwable $e) {
+        }
+        return $relative;
     }
 
     /**
@@ -28,13 +38,31 @@ class AutoPathGenerator implements PathGenerator
      */
     public function getPathForResponsiveImages(Media $media): string
     {
-        return $this->base($media).'responsive-images/';
+        $relative = $this->base($media).'responsive-images/';
+        try {
+            $absolute = Storage::disk($media->disk)->path($relative);
+            if (!is_dir($absolute)) {
+                @mkdir($absolute, 0777, true);
+                @chmod($absolute, 0777);
+            }
+        } catch (\Throwable $e) {
+        }
+        return $relative;
     }
 
     private function base(Media $media): string
     {
         // Store inside autos/{auto_id}/
         $autoId = (int) $media->model_id;
-        return "autos/{$autoId}/";
+        $relative = "autos/{$autoId}/";
+        try {
+            $absolute = Storage::disk($media->disk)->path($relative);
+            if (!is_dir($absolute)) {
+                @mkdir($absolute, 0777, true);
+                @chmod($absolute, 0777);
+            }
+        } catch (\Throwable $e) {
+        }
+        return $relative;
     }
 }
