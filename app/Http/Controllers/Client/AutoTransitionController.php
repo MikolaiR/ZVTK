@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Enums\Statuses;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Autos\TransitionRequest;
 use App\Models\Auto;
@@ -15,15 +14,13 @@ use App\Services\Autos\Transitions\MoveToParkingTransition;
 use App\Services\Autos\Transitions\SellTransition;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class AutoTransitionController extends Controller
 {
-    public function store(TransitionRequest $request, Auto $auto)
+    public function store(TransitionRequest $request, Auto $auto): RedirectResponse
     {
         $user = $request->user();
-        if (! $user->hasRole('admin') && (int) $auto->company_id !== (int) $user->company_id) {
-            abort(404);
-        }
 
         $action = (string) $request->input('action');
         $map = [
@@ -50,14 +47,10 @@ class AutoTransitionController extends Controller
 
     public function storageCost(Request $request, Auto $auto): JsonResponse
     {
-        $user = $request->user();
-        if (! $user->hasRole('admin') && (int) $auto->company_id !== (int) $user->company_id) {
-            abort(404);
-        }
-
         $calculator = app(ParkingCostCalculator::class);
         $result = $calculator->calculate($auto);
 
         return response()->json($result);
     }
 }
+
