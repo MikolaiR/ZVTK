@@ -40,9 +40,14 @@ class UserController extends Controller
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
+                'company' => $u->company ? [
+                    'id' => $u->company->id,
+                    'name' => $u->company->name,
+                ] : null,
                 'is_active' => (bool) $u->is_active,
                 'deleted_at' => $u->deleted_at,
                 'roles' => $u->roles->pluck('name')->values(),
+                'permissions' => $u->permissions->pluck('name')->values(),
                 'created_at' => $u->created_at?->toDateTimeString(),
             ]),
             'roles' => $roles,
@@ -80,8 +85,15 @@ class UserController extends Controller
     public function create(): Response
     {
         $roles = $this->users->getAllRoleNames();
+        $permissions = $this->users->getAllPermissionNames();
+        $companies = \App\Models\Company::query()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get();
         return Inertia::render('Admin/Users/Create', [
             'roles' => $roles,
+            'permissions' => $permissions,
+            'companies' => $companies,
         ]);
     }
 
@@ -95,15 +107,24 @@ class UserController extends Controller
     public function edit(User $user): Response
     {
         $roles = $this->users->getAllRoleNames();
+        $permissions = $this->users->getAllPermissionNames();
+        $companies = \App\Models\Company::query()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get();
         return Inertia::render('Admin/Users/Edit', [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'company_id' => $user->company_id,
                 'is_active' => (bool) $user->is_active,
                 'roles' => $user->roles()->pluck('name')->values(),
+                'permissions' => $user->permissions()->pluck('name')->values(),
             ],
             'roles' => $roles,
+            'permissions' => $permissions,
+            'companies' => $companies,
         ]);
     }
 

@@ -4,44 +4,37 @@
       <h2 class="text-lg font-semibold mb-4">Редактирование пользователя</h2>
 
       <form @submit.prevent="submit" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Имя</label>
-          <input v-model="form.name" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-          <p v-if="form.errors.name" class="text-sm text-red-600 mt-1">{{ form.errors.name }}</p>
-        </div>
+        <FormInput label="Имя" v-model="form.name" :error="form.errors.name" />
+        <FormInput label="Email" type="email" v-model="form.email" :error="form.errors.email" />
+        <FormInput label="Пароль (не заполняйте, если не меняете)" type="password" v-model="form.password" :error="form.errors.password" />
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input v-model="form.email" type="email" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-          <p v-if="form.errors.email" class="text-sm text-red-600 mt-1">{{ form.errors.email }}</p>
-        </div>
+        <FormSelect
+          label="Компания"
+          v-model="form.company_id"
+          :options="companyOptions"
+          placeholder="Без компании"
+          :error="form.errors.company_id"
+        />
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Пароль (не заполняйте, если не меняете)</label>
-          <input v-model="form.password" type="password" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-          <p v-if="form.errors.password" class="text-sm text-red-600 mt-1">{{ form.errors.password }}</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input id="is_active" v-model="form.is_active" type="checkbox" class="rounded border-gray-300 text-gray-900 focus:ring-gray-900" :disabled="meId === user.id" />
-          <label for="is_active" class="text-sm">Активен</label>
-        </div>
+        <FormCheckbox :id="'is_active'" v-model="form.is_active" label="Активен" :disabled="meId === user.id" />
         <p v-if="meId === user.id" class="text-xs text-gray-500">Нельзя выключить самого себя.</p>
 
+        <FormCheckboxGroup label="Роли" v-model="form.roles" :options="roles" :error="form.errors.roles" />
         <div>
-          <label class="block text-sm font-medium mb-2">Роли</label>
-          <div class="flex flex-wrap gap-3">
-            <label v-for="r in roles" :key="r" class="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" :value="r" v-model="form.roles" class="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-              <span>{{ r }}</span>
-            </label>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-sm font-medium">Пермишены</span>
+            <Link href="/admin/permissions/create" class="text-xs rounded-md border px-2 py-0.5 hover:bg-gray-50">Добавить пермишен</Link>
           </div>
-          <p v-if="form.errors.roles" class="text-sm text-red-600 mt-1">{{ form.errors.roles }}</p>
+          <FormCheckboxGroup v-model="form.permissions" :options="permissions" :error="form.errors.permissions" />
         </div>
 
         <div class="flex items-center gap-3">
-          <button type="submit" :disabled="form.processing" class="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-50">Сохранить</button>
+          <AppButton type="submit" :disabled="form.processing">Сохранить</AppButton>
           <Link href="/admin/users" class="text-sm text-gray-600 hover:text-gray-900">Отмена</Link>
+          <div class="ml-auto hidden md:flex items-center gap-2">
+            <Link href="/admin/roles/create" class="text-sm rounded-md border px-3 py-2 hover:bg-gray-50">Добавить роль</Link>
+            <Link href="/admin/permissions/create" class="text-sm rounded-md border px-3 py-2 hover:bg-gray-50">Добавить пермишен</Link>
+          </div>
         </div>
       </form>
     </div>
@@ -52,21 +45,32 @@
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { Link, useForm, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
+import FormInput from '../../../Components/FormInput.vue'
+import FormSelect from '../../../Components/FormSelect.vue'
+import FormCheckbox from '../../../Components/FormCheckbox.vue'
+import FormCheckboxGroup from '../../../Components/FormCheckboxGroup.vue'
+import AppButton from '../../../Components/AppButton.vue'
 
 const page = usePage()
 const user = page.props.user
 const roles = page.props.roles
+const permissions = page.props.permissions
+const companies = page.props.companies || []
 const meId = computed(() => page.props.auth?.user?.id ?? null)
 
 const form = useForm({
   name: user.name,
   email: user.email,
   password: '', // optional
+  company_id: user.company_id ?? '',
   is_active: user.is_active,
   roles: Array.from(user.roles || []),
+  permissions: Array.from(user.permissions || []),
 })
 
 const submit = () => {
   form.put(`/admin/users/${user.id}`)
 }
+
+const companyOptions = companies.map(c => ({ label: c.name, value: c.id }))
 </script>

@@ -22,8 +22,8 @@ class UserService
         $role = (string) ($filters['role'] ?? '');
 
         $query = User::query()
-            ->with(['roles:id,name'])
-            ->select(['id', 'name', 'email', 'is_active', 'deleted_at', 'created_at']);
+            ->with(['roles:id,name', 'permissions:id,name', 'company:id,name'])
+            ->select(['id', 'name', 'email', 'company_id', 'is_active', 'deleted_at', 'created_at']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -75,11 +75,16 @@ class UserService
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'company_id' => $data['company_id'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? true),
         ]);
 
         if (!empty($data['roles'])) {
             $user->syncRoles($data['roles']);
+        }
+
+        if (!empty($data['permissions'])) {
+            $user->syncPermissions($data['permissions']);
         }
 
         return $user;
@@ -104,6 +109,7 @@ class UserService
         $payload = [
             'name' => $data['name'],
             'email' => $data['email'],
+            'company_id' => $data['company_id'] ?? null,
             'is_active' => (bool) $data['is_active'],
         ];
 
@@ -115,6 +121,10 @@ class UserService
 
         if (array_key_exists('roles', $data)) {
             $user->syncRoles($data['roles'] ?? []);
+        }
+
+        if (array_key_exists('permissions', $data)) {
+            $user->syncPermissions($data['permissions'] ?? []);
         }
 
         return $user;
@@ -163,5 +173,18 @@ class UserService
     public function syncRoles(User $user, array $roles): void
     {
         $user->syncRoles($roles);
+    }
+
+    /**
+     * Return all permission names.
+     *
+     * @return Collection<string>
+     */
+    public function getAllPermissionNames(): Collection
+    {
+        return \Spatie\Permission\Models\Permission::query()
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->pluck('name');
     }
 }
