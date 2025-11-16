@@ -21,7 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        URL::forceScheme('https');
+        if(config('app.debug') === false) {
+            URL::forceScheme('https');
+        }
         JsonResource::withoutWrapping();
     }
 }
