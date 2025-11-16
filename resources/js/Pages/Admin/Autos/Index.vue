@@ -62,7 +62,7 @@ let t = null
 watch(() => local.search, (v) => {
   if (t) clearTimeout(t)
   t = setTimeout(() => {
-    router.get('/admin/autos', { search: v }, { replace: true, preserveScroll: true, only: ['autos'] })
+    router.get('/admin/autos', { search: v }, { replace: true, preserveScroll: true, preserveState: true, only: ['autos', 'filters'] })
   }, 300)
 })
 
