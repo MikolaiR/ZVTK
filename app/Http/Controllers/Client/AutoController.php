@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Resources\AutoResource;
 use App\Services\Autos\CreateAutoService;
 use App\Filters\Autos\AutoFilters;
+use App\Enums\Statuses;
 
 class AutoController extends Controller
 {
@@ -31,7 +32,7 @@ class AutoController extends Controller
         ];
 
         $query = Auto::query()
-            ->select(['id', 'title', 'vin'])
+            ->select(['id', 'title', 'vin', 'status'])
             ->latest();
 
         AutoFilters::apply($query, $filters);
@@ -39,7 +40,28 @@ class AutoController extends Controller
         $autos = $query->paginate(20)->withQueryString();
 
         return Inertia::render('Autos/Index', [
-            'autos' => $autos,
+            'autos' => $autos->through(function (Auto $a) {
+                $preview = $a->getFirstMedia('photos');
+                $previewUrl = null;
+                if ($preview) {
+                    try {
+                        if ($preview->disk === 'local') {
+                            $previewUrl = $preview->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
+                        }
+                    } catch (\Throwable $e) {
+                        // ignore, fallback to getUrl
+                    }
+                    $previewUrl = $previewUrl ?: $preview->getUrl();
+                }
+
+                return [
+                    'id' => $a->id,
+                    'title' => $a->title,
+                    'status' => $a->status->value,
+                    'status_label' => Statuses::from($a->status->value)->lable(),
+                    'preview_url' => $previewUrl,
+                ];
+            }),
             'filters' => [
                 'vin' => $filters['vin'],
                 'status' => $filters['status'],

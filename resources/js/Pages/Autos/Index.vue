@@ -7,19 +7,31 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Фото</th>
               <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">VIN</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="a in autos.data" :key="a.id" class="hover:bg-gray-50">
               <td class="px-4 py-2">
+                <img
+                  v-if="a.preview_url"
+                  :src="a.preview_url"
+                  alt="Превью"
+                  class="h-12 w-20 object-cover rounded"
+                />
+                <div v-else class="h-12 w-20 bg-gray-100 flex items-center justify-center text-xs text-gray-400 rounded">
+                  Нет фото
+                </div>
+              </td>
+              <td class="px-4 py-2">
                 <Link :href="`/autos/${a.id}`" class="text-gray-900 hover:underline">{{ a.title }}</Link>
               </td>
-              <td class="px-4 py-2 text-gray-600">{{ a.vin }}</td>
+              <td class="px-4 py-2 text-gray-600">{{ a.status_label }}</td>
             </tr>
             <tr v-if="!autos.data.length">
-              <td colspan="2" class="px-4 py-6 text-center text-gray-500">Нет результатов</td>
+              <td colspan="3" class="px-4 py-6 text-center text-gray-500">Нет результатов</td>
             </tr>
           </tbody>
         </table>
