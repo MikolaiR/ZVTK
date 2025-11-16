@@ -24,11 +24,11 @@ enum Statuses: int
     public function backgroundImg(): string
     {
         return match ($this) {
-            self::Delivery => '/images/not_photo.png',
-            self::Customer => '/images/not_photo.png',
-            self::DeliveryToParking => '/images/not_photo.png',
-            self::Parking => '/images/not_photo.png',
-            self::Sale => '/images/not_photo.png',
+            self::Delivery => '/images/delivery.webp',
+            self::Customer => '/images/customer.webp',
+            self::DeliveryToParking => '/images/delivery_to_parking.webp',
+            self::Parking => '/images/parking.webp',
+            self::Sale => '/images/sale.webp',
         };
     }
 

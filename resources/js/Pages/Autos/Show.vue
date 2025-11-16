@@ -3,54 +3,49 @@
     <div>
       <div class="mb-4 flex items-center justify-between">
         <h1 class="text-xl font-semibold">{{ auto.title || 'Автомобиль' }}</h1>
-        <Link href="/autos" class="text-sm rounded-md border px-3 py-1.5 hover:bg-gray-100">К списку</Link>
+        <ClientButton href="/autos" variant="outline" class="text-sm">К списку</ClientButton>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Actions (mobile first) -->
         <aside class="order-1 md:order-2 md:col-span-1">
           <div class="sticky top-20 space-y-3">
-            <div class="rounded-lg border bg-white p-4">
-              <div class="text-sm text-gray-600 mb-2">Статус</div>
-              <div class="text-lg font-semibold">{{ auto.status_label }}</div>
-            </div>
+            <Card title="Статус">
+              <StatusBadge :status="auto.status" :label="auto.status_label" />
+            </Card>
 
-            <div class="rounded-lg border bg-white p-4">
-              <div class="font-medium mb-2">Действия</div>
+            <Card title="Действия">
               <div class="space-y-2">
                 <template v-if="isDelivery">
-                  <button @click="openMoveToCustoms" class="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black">Переместить на таможню</button>
+                  <ClientButton @click="openMoveToCustoms" class="w-full">Переместить на таможню</ClientButton>
                 </template>
                 <template v-else-if="isCustomer">
-                  <button @click="openMoveToParking" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Переместить на стоянку</button>
-                  <button @click="openSell" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Передана владельцу</button>
+                  <ClientButton @click="openMoveToParking" class="w-full">Переместить на стоянку</ClientButton>
+                  <ClientButton @click="openSell" class="w-full" variant="danger">Передана владельцу</ClientButton>
                 </template>
                 <template v-else-if="isDeliveryToParking">
-                  <button @click="openAcceptAtParking" class="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black">Принять на стоянку</button>
+                  <ClientButton @click="openAcceptAtParking" class="w-full">Принять на стоянку</ClientButton>
                 </template>
                 <template v-else-if="isParking">
-                  <button @click="openSell" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Передана владельцу</button>
-                  <button @click="openMoveToCustomsFromParking" class="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black">Переместить на таможню</button>
-                  <button @click="openMoveToOtherParking" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Переместить на другую стоянку</button>
-                  <button @click="openStorageCost" class="w-full rounded-md border px-4 py-2 hover:bg-gray-50">Рассчитать стоимость хранения</button>
+                  <ClientButton @click="openSell" class="w-full">Передана владельцу</ClientButton>
+                  <ClientButton @click="openMoveToCustomsFromParking" class="w-full" variant="danger">Переместить на таможню</ClientButton>
+                  <ClientButton @click="openMoveToOtherParking" class="w-full">Переместить на другую стоянку</ClientButton>
+                  <ClientButton @click="openStorageCost" class="w-full" variant="outline">Рассчитать стоимость хранения</ClientButton>
                 </template>
                 <template v-else-if="isSale">
-                  <button @click="openStorageCost" class="w-full rounded-md border px-4 py-2 hover:bg-gray-50">Стоимость хранения</button>
+                  <ClientButton @click="openStorageCost" class="w-full" variant="outline">Стоимость хранения</ClientButton>
                 </template>
-                <button class="w-full rounded-md border px-4 py-2 hover:bg-gray-50">Скачать документы ZIP</button>
+                <ClientButton class="w-full" variant="outline">Скачать документы ZIP</ClientButton>
               </div>
-            </div>
+            </Card>
           </div>
         </aside>
 
         <!-- Main content -->
         <section class="order-2 md:order-1 md:col-span-2 space-y-6">
           <!-- Media slider -->
-          <div class="rounded-lg border bg-white p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-base font-medium">Медиа</h2>
-              <div class="text-sm text-gray-500" v-if="slides.length">{{ slideIndex + 1 }} / {{ slides.length }}</div>
-            </div>
+          <Card title="Медиа">
+            <div class="text-sm text-gray-500 mb-3" v-if="slides.length">{{ slideIndex + 1 }} / {{ slides.length }}</div>
             <div v-if="slides.length" class="relative">
               <div class="aspect-video w-full overflow-hidden rounded-md border bg-black">
                 <template v-if="currentSlide.kind === 'photo'">
@@ -75,7 +70,7 @@
                 @click="go(i)"
                 :class="[
                   'h-16 overflow-hidden rounded-md border',
-                  i === slideIndex ? 'ring-2 ring-gray-900' : ''
+                  i === slideIndex ? 'ring-2 ring-[var(--primary)]' : ''
                 ]"
               >
                 <template v-if="s.kind === 'photo'">
@@ -86,23 +81,21 @@
                 </template>
               </button>
             </div>
-          </div>
+          </Card>
 
           <!-- Documents -->
-          <div class="rounded-lg border bg-white p-4">
-            <h2 class="text-base font-medium mb-3">Документы</h2>
+          <Card title="Документы">
             <ul class="space-y-2" v-if="auto.media.documents && auto.media.documents.length">
               <li v-for="d in auto.media.documents" :key="d.id" class="flex items-center justify-between rounded-md border p-2 text-sm">
                 <span class="truncate mr-3">{{ d.file_name || d.name }}</span>
-                <a :href="d.url" target="_blank" class="rounded-md border px-2 py-0.5 hover:bg-gray-50">Скачать</a>
+                <a :href="d.url" target="_blank" class="rounded-md border border-[var(--primary)] text-[var(--primary)] px-2 py-0.5 hover:bg-[var(--primary)] hover:text-white">Скачать</a>
               </li>
             </ul>
             <div v-else class="text-sm text-gray-500">Нет документов</div>
-          </div>
+          </Card>
 
           <!-- Info -->
-          <div class="rounded-lg border bg-white p-4">
-            <h2 class="text-base font-medium mb-3">Информация</h2>
+          <Card title="Информация">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
                 <div class="text-gray-500">VIN</div>
@@ -141,11 +134,10 @@
                 <div class="font-medium">{{ auto.provider?.name || '—' }}</div>
               </div>
             </div>
-          </div>
+          </Card>
 
           <!-- Current location -->
-          <div class="rounded-lg border bg-white p-4">
-            <h2 class="text-base font-medium mb-3">Текущая локация</h2>
+          <Card title="Текущая локация">
             <div v-if="auto.current_location" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
                 <div class="text-gray-500">Тип</div>
@@ -157,7 +149,7 @@
               </div>
               <div>
                 <div class="text-gray-500">Статус</div>
-                <div class="font-medium">{{ auto.current_location.status_label }}</div>
+                <div class="font-medium"><StatusBadge :status="auto.current_location.status" :label="auto.current_location.status_label" /></div>
               </div>
               <div>
                 <div class="text-gray-500">Период</div>
@@ -173,210 +165,185 @@
               </div>
             </div>
             <div v-else class="text-sm text-gray-500">Нет активной локации</div>
-          </div>
+          </Card>
 
           <!-- History -->
-          <div class="rounded-lg border bg-white p-4">
-            <h2 class="text-base font-medium mb-3">История перемещений</h2>
+          <Card title="История перемещений">
             <div v-if="auto.periods && auto.periods.length" class="divide-y">
               <div v-for="p in auto.periods" :key="p.id" class="py-3 grid grid-cols-1 sm:grid-cols-5 gap-2 text-sm">
                 <div class="sm:col-span-1"><span class="text-gray-500">Тип</span><div class="font-medium">{{ p.type_label }}</div></div>
                 <div class="sm:col-span-1"><span class="text-gray-500">Название</span><div class="font-medium">{{ p.name || '—' }}</div></div>
-                <div class="sm:col-span-1"><span class="text-gray-500">Статус</span><div class="font-medium">{{ p.status_label }}</div></div>
+                <div class="sm:col-span-1"><span class="text-gray-500">Статус</span><div class="font-medium"><StatusBadge :status="p.status" :label="p.status_label" /></div></div>
                 <div class="sm:col-span-1"><span class="text-gray-500">Период</span><div class="font-medium">{{ fmt(p.started_at) }} — {{ fmt(p.ended_at) || 'н.в.' }}</div></div>
                 <div class="sm:col-span-1"><span class="text-gray-500">Принял</span><div class="font-medium">{{ p.accepted_by?.name || '—' }}</div></div>
                 <div class="sm:col-span-5" v-if="p.acceptance_note"><span class="text-gray-500">Примечание</span><div class="font-medium">{{ p.acceptance_note }}</div></div>
               </div>
             </div>
             <div v-else class="text-sm text-gray-500">История отсутствует</div>
-          </div>
+          </Card>
         </section>
       </div>
 
-      <!-- Modals overlay -->
-      <div v-if="Object.values(modals).some(Boolean)" class="fixed inset-0 z-40 bg-black/30"></div>
-
       <!-- Move to Customs -->
-      <div v-if="modals.moveToCustoms" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Переместить на таможню</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm mb-1">Таможня</label>
-              <select v-model="form.customer_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
-                <option :value="null" disabled>Выберите таможню</option>
-                <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-              <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
-            </div>
-            <div>
-              <label class="block text-sm mb-1">Дата прибытия</label>
-              <input type="date" v-model="form.arrival_date" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-              <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
-            </div>
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
+      <Modal :open="modals.moveToCustoms" title="Переместить на таможню" @close="closeAll">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm mb-1">Таможня</label>
+            <select v-model="form.customer_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+              <option :value="null" disabled>Выберите таможню</option>
+              <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
           </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-gray-900 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</button>
+          <div>
+            <label class="block text-sm mb-1">Дата прибытия</label>
+            <input type="date" v-model="form.arrival_date" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
+            <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
+          </div>
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Move to Parking -->
-      <div v-if="modals.moveToParking" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Переместить на стоянку</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm mb-1">Стоянка</label>
-              <select v-model="form.parking_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
-                <option :value="null" disabled>Выберите стоянку</option>
-                <option v-for="p in parkings" :key="p.id" :value="p.id">{{ p.name }}</option>
-              </select>
-              <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
-            </div>
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
+      <Modal :open="modals.moveToParking" title="Переместить на стоянку" @close="closeAll">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm mb-1">Стоянка</label>
+            <select v-model="form.parking_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+              <option :value="null" disabled>Выберите стоянку</option>
+              <option v-for="p in parkings" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+            <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
           </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</button>
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Accept at Parking -->
-      <div v-if="modals.acceptAtParking" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Принять на стоянку</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
-          </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-gray-900 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing" @click="submit">Подтвердить</button>
+      <Modal :open="modals.acceptAtParking" title="Принять на стоянку" @close="closeAll">
+        <div class="space-y-4">
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Move to Customs from Parking -->
-      <div v-if="modals.moveToCustomsFromParking" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Переместить на таможню</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm mb-1">Таможня</label>
-              <select v-model="form.customer_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
-                <option :value="null" disabled>Выберите таможню</option>
-                <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-              <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
-            </div>
-            <div>
-              <label class="block text-sm mb-1">Дата прибытия</label>
-              <input type="date" v-model="form.arrival_date" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-              <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
-            </div>
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
+      <Modal :open="modals.moveToCustomsFromParking" title="Переместить на таможню" @close="closeAll">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm mb-1">Таможня</label>
+            <select v-model="form.customer_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+              <option :value="null" disabled>Выберите таможню</option>
+              <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
           </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-gray-900 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</button>
+          <div>
+            <label class="block text-sm mb-1">Дата прибытия</label>
+            <input type="date" v-model="form.arrival_date" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
+            <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
+          </div>
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Move to Other Parking -->
-      <div v-if="modals.moveToOtherParking" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Переместить на другую стоянку</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm mb-1">Стоянка</label>
-              <select v-model="form.parking_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
-                <option :value="null" disabled>Выберите стоянку</option>
-                <option v-for="p in availableParkings" :key="p.id" :value="p.id">{{ p.name }}</option>
-              </select>
-              <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
-            </div>
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
+      <Modal :open="modals.moveToOtherParking" title="Переместить на другую стоянку" @close="closeAll">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm mb-1">Стоянка</label>
+            <select v-model="form.parking_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+              <option :value="null" disabled>Выберите стоянку</option>
+              <option v-for="p in availableParkings" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+            <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
           </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</button>
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Sell -->
-      <div v-if="modals.sell" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Передана владельцу</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm mb-1">Дата передачи</label>
-              <input type="date" v-model="form.sold_at" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
-              <p v-if="form.errors.sold_at" class="text-sm text-red-600 mt-1">{{ form.errors.sold_at }}</p>
-            </div>
-            <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-            <div>
-              <label class="block text-sm mb-1">Комментарий</label>
-              <textarea v-model="form.note" rows="3" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"></textarea>
-            </div>
+      <Modal :open="modals.sell" title="Передана владельцу" @close="closeAll">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm mb-1">Дата передачи</label>
+            <input type="date" v-model="form.sold_at" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
+            <p v-if="form.errors.sold_at" class="text-sm text-red-600 mt-1">{{ form.errors.sold_at }}</p>
           </div>
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Отмена</button>
-            <button class="rounded-md bg-emerald-600 px-4 py-2 text-white disabled:opacity-50" :disabled="form.processing" @click="submit">Подтвердить</button>
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+          <div>
+            <label class="block text-sm mb-1">Комментарий</label>
+            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
           </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
 
       <!-- Storage cost -->
-      <div v-if="modals.storage" class="fixed inset-0 z-50 grid place-items-center p-4">
-        <div class="w-full max-w-3xl rounded-lg border bg-white p-4">
-          <div class="flex items-center justify-between mb-3"><h3 class="text-lg font-semibold">Стоимость хранения</h3><button @click="closeAll">✕</button></div>
-          <div class="space-y-4">
-            <div class="text-sm text-gray-700">Всего дней: <span class="font-medium">{{ storage.total_days }}</span>, Итого: <span class="font-medium">{{ new Intl.NumberFormat('ru-RU').format(storage.total_cost) }}</span></div>
-            <div v-for="p in storage.per_parkings" :key="p.parking.id" class="rounded-md border">
-              <div class="px-3 py-2 border-b font-medium">Стоянка: {{ p.parking.name || ('#' + p.parking.id) }} — дней: {{ p.total_days }}, сумма: {{ new Intl.NumberFormat('ru-RU').format(p.total_cost) }}</div>
-              <div class="max-h-64 overflow-auto">
-                <table class="min-w-full text-sm">
-                  <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Дата</th><th class="px-3 py-2 text-left">Цена</th></tr></thead>
-                  <tbody>
-                    <tr v-for="d in p.days" :key="d.date">
-                      <td class="px-3 py-1.5">{{ d.date }}</td>
-                      <td class="px-3 py-1.5">{{ new Intl.NumberFormat('ru-RU').format(d.price) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+      <Modal :open="modals.storage" title="Стоимость хранения" size="lg" @close="closeAll">
+        <div class="space-y-4">
+          <div class="text-sm text-gray-700">Всего дней: <span class="font-medium">{{ storage.total_days }}</span>, Итого: <span class="font-medium">{{ new Intl.NumberFormat('ru-RU').format(storage.total_cost) }}</span></div>
+          <div v-for="p in storage.per_parkings" :key="p.parking.id" class="rounded-md border">
+            <div class="px-3 py-2 border-b font-medium">Стоянка: {{ p.parking.name || ('#' + p.parking.id) }} — дней: {{ p.total_days }}, сумма: {{ new Intl.NumberFormat('ru-RU').format(p.total_cost) }}</div>
+            <div class="max-h-64 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Дата</th><th class="px-3 py-2 text-left">Цена</th></tr></thead>
+                <tbody>
+                  <tr v-for="d in p.days" :key="d.date">
+                    <td class="px-3 py-1.5">{{ d.date }}</td>
+                    <td class="px-3 py-1.5">{{ new Intl.NumberFormat('ru-RU').format(d.price) }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="mt-4 flex items-center justify-end">
-            <button class="rounded-md border px-3 py-1.5" @click="closeAll">Закрыть</button>
-          </div>
         </div>
-      </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Закрыть</ClientButton>
+        </template>
+      </Modal>
     </div>
   </ClientLayout>
 </template>
@@ -386,6 +353,10 @@ import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, reactive } from 'vue'
 import Uploads from '../../Components/Uploads.vue'
+import Card from '../../Components/Card.vue'
+import StatusBadge from '../../Components/StatusBadge.vue'
+import ClientButton from '../../Components/ClientButton.vue'
+import Modal from '../../Components/Modal.vue'
 
 const props = defineProps({
   auto: { type: Object, required: true },

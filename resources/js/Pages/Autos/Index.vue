@@ -15,20 +15,14 @@
           <tbody class="divide-y divide-gray-200">
             <tr v-for="a in autos.data" :key="a.id" class="hover:bg-gray-50">
               <td class="px-4 py-2">
-                <img
-                  v-if="a.preview_url"
-                  :src="a.preview_url"
-                  alt="Превью"
-                  class="h-12 w-20 object-cover rounded"
-                />
-                <div v-else class="h-12 w-20 bg-gray-100 flex items-center justify-center text-xs text-gray-400 rounded">
-                  Нет фото
-                </div>
+                <AutoPreview :src="a.preview_url" sizeClass="h-12 w-20" />
               </td>
               <td class="px-4 py-2">
                 <Link :href="`/autos/${a.id}`" class="text-gray-900 hover:underline">{{ a.title }}</Link>
               </td>
-              <td class="px-4 py-2 text-gray-600">{{ a.status_label }}</td>
+              <td class="px-4 py-2">
+                <StatusBadge :status="a.status" :label="a.status_label" />
+              </td>
             </tr>
             <tr v-if="!autos.data.length">
               <td colspan="3" class="px-4 py-6 text-center text-gray-500">Нет результатов</td>
@@ -36,20 +30,7 @@
           </tbody>
         </table>
       </div>
-
-      <div class="mt-4 flex flex-wrap gap-2">
-        <Link
-          v-for="link in autos.links"
-          :key="link.label + link.url"
-          :href="link.url || '#'"
-          v-html="link.label"
-          :class="[
-            'px-3 py-1.5 rounded-md border text-sm',
-            link.active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'
-          ]"
-          :disabled="!link.url"
-        />
-      </div>
+      <Pagination class="mt-4" :links="autos.links" :total="autos.total" />
     </div>
   </ClientLayout>
 </template>
@@ -57,6 +38,9 @@
 <script setup>
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { Link } from '@inertiajs/vue3'
+import AutoPreview from '../../Components/AutoPreview.vue'
+import StatusBadge from '../../Components/StatusBadge.vue'
+import Pagination from '../../Components/Pagination.vue'
 
 defineProps({
   autos: { type: Object, required: true },

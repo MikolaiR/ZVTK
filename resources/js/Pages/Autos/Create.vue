@@ -3,14 +3,14 @@
     <div class="max-w-4xl">
       <div class="mb-4 flex items-center justify-between">
         <h1 class="text-xl font-semibold">Добавить автомобиль</h1>
-        <Link href="/autos" class="text-sm rounded-md border px-3 py-1.5 hover:bg-gray-100">К списку</Link>
+        <ClientButton href="/autos" variant="outline" class="text-sm">К списку</ClientButton>
       </div>
 
       <form @submit.prevent="submit" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Бренд</label>
-            <select v-model="form.auto_brand_id" @change="onBrandChange" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
+            <select v-model="form.auto_brand_id" @change="onBrandChange" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
               <option :value="null" disabled>Выберите бренд</option>
               <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option>
             </select>
@@ -19,7 +19,7 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Модель</label>
-            <select v-model="form.auto_model_id" :disabled="!models.length" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900 disabled:opacity-50">
+            <select v-model="form.auto_model_id" :disabled="!models.length" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)] disabled:opacity-50">
               <option :value="null" disabled>Выберите модель</option>
               <option v-for="m in models" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
@@ -28,7 +28,7 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Цвет</label>
-            <select v-model="form.color_id" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900">
+            <select v-model="form.color_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
               <option :value="null">Не выбран</option>
               <option v-for="c in colors" :key="c.id" :value="c.id" :style="{ '--clr': c.hex_code }"
                       class="text-[var(--clr)]">{{ `${c.name} ${c.name_ru}` }}</option>
@@ -38,25 +38,25 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">VIN</label>
-            <input v-model="form.vin" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
+            <input v-model="form.vin" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
             <p v-if="form.errors.vin" class="mt-1 text-sm text-red-600">{{ form.errors.vin }}</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Дата отправки</label>
-            <input v-model="form.departure_date" type="date" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
+            <input v-model="form.departure_date" type="date" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
             <p v-if="form.errors.departure_date" class="mt-1 text-sm text-red-600">{{ form.errors.departure_date }}</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Год производства</label>
-            <input v-model.number="form.year" type="number" :max="currentYear" min="1900" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
+            <input v-model.number="form.year" type="number" :max="currentYear" min="1900" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
             <p v-if="form.errors.year" class="mt-1 text-sm text-red-600">{{ form.errors.year }}</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Цена</label>
-            <input v-model.number="form.price" type="number" min="0" class="w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900" />
+            <input v-model.number="form.price" type="number" min="0" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
             <p v-if="form.errors.price" class="mt-1 text-sm text-red-600">{{ form.errors.price }}</p>
           </div>
 
@@ -68,7 +68,7 @@
         <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
 
         <div class="flex items-center gap-3">
-          <button type="submit" :disabled="form.processing" class="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black disabled:opacity-50">Добавить</button>
+          <ClientButton type="submit" :disabled="form.processing">Добавить</ClientButton>
           <span v-if="form.progress" class="text-sm text-gray-600">Загрузка: {{ form.progress.percentage }}%</span>
         </div>
       </form>
@@ -80,6 +80,7 @@
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import Uploads from '../../Components/Uploads.vue'
+import ClientButton from '../../Components/ClientButton.vue'
 import axios from 'axios'
 import { ref, computed, reactive } from 'vue'
 

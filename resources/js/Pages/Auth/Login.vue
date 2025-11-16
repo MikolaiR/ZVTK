@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="w-full max-w-md bg-white border rounded-lg p-6 shadow-sm">
+  <div class="min-h-screen flex items-center justify-center bg-[var(--bg)] px-4">
+    <div class="w-full max-w-md bg-white border border-[var(--border)] rounded-lg p-6 shadow-sm">
       <h1 class="text-xl font-semibold mb-1">Вход в систему</h1>
       <p class="text-sm text-gray-600 mb-6">Укажите свои учетные данные</p>
 
@@ -13,7 +13,7 @@
             type="email"
             autocomplete="email"
             required
-            class="block w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+            class="block w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
           />
           <p v-if="form.errors.email" class="mt-1 text-sm text-red-600">{{ form.errors.email }}</p>
         </div>
@@ -26,14 +26,14 @@
             type="password"
             autocomplete="current-password"
             required
-            class="block w-full rounded-md border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+            class="block w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
           />
           <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">{{ form.errors.password }}</p>
         </div>
 
         <div class="flex items-center justify-between">
           <label class="inline-flex items-center gap-2 text-sm">
-            <input v-model="form.remember" type="checkbox" class="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
+            <input v-model="form.remember" type="checkbox" class="rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]" />
             Запомнить меня
           </label>
         </div>
@@ -41,7 +41,7 @@
         <button
           type="submit"
           :disabled="form.processing"
-          class="w-full inline-flex justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
+          class="w-full inline-flex justify-center rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
         >
           Войти
         </button>

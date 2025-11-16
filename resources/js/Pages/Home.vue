@@ -1,10 +1,11 @@
 <template>
   <ClientLayout>
     <div>
-      <div class="mb-4 flex items-center justify-between">
-        <h1 class="text-xl font-semibold">Статусы</h1>
-        <Link href="/autos/create" class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-100">Добавить авто</Link>
-      </div>
+      <PageHeader title="Статусы">
+        <template #actions>
+          <ClientButton href="/autos/create" variant="outline" class="text-sm">Добавить авто</ClientButton>
+        </template>
+      </PageHeader>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link
           href="/autos"
@@ -39,6 +40,8 @@
 <script setup>
 import ClientLayout from '../Layouts/ClientLayout.vue'
 import { Link } from '@inertiajs/vue3'
+import PageHeader from '../Components/PageHeader.vue'
+import ClientButton from '../Components/ClientButton.vue'
 
 defineProps({
   statuses: { type: Array, default: () => [] },
