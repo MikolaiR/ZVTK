@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Enums\Statuses;
 use App\Models\Auto;
+use App\Support\MediaLibrary\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,16 +15,7 @@ class AutoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $makeUrl = function ($m) {
-            try {
-                if ($m->disk === 'local') {
-                    return $m->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
-                }
-            } catch (\Throwable $e) {
-                // fallback below
-            }
-            return $m->getUrl();
-        };
+        $makeUrl = fn($m, $conv = '') => MediaUrl::url($m, $conv);
 
         $mapTypeLabel = function (string $type) {
             $b = class_basename($type);
@@ -39,7 +31,10 @@ class AutoResource extends JsonResource
         $photos = $this->getMedia('photos')->map(function ($m) use ($makeUrl) {
             return [
                 'id' => $m->id,
-                'url' => $makeUrl($m),
+                // main display URL (larger)
+                'url' => $makeUrl($m, 'preview'),
+                'thumb_url' => $makeUrl($m, 'thumb'),
+                'full_url' => $makeUrl($m, 'large'),
                 'name' => $m->name,
                 'file_name' => $m->file_name,
             ];

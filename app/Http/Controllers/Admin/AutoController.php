@@ -22,6 +22,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Support\MediaLibrary\MediaUrl;
 
 class AutoController extends Controller
 {
@@ -47,17 +48,7 @@ class AutoController extends Controller
             'filters' => ['search' => $search],
             'autos' => $autos->through(function (Auto $a) {
                 $preview = $a->getFirstMedia('photos');
-                $previewUrl = null;
-                if ($preview) {
-                    try {
-                        if ($preview->disk === 'local') {
-                            $previewUrl = $preview->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
-                        }
-                    } catch (\Throwable $e) {
-                        // ignore, fallback to getUrl
-                    }
-                    $previewUrl = $previewUrl ?: $preview->getUrl();
-                }
+                $previewUrl = $preview ? MediaUrl::url($preview, 'thumb') : null;
                 return [
                     'id' => $a->id,
                     'title' => $a->title,
@@ -98,20 +89,13 @@ class AutoController extends Controller
         $brands = AutoBrand::query()->select('id', 'name')->orderBy('name')->get();
         $colors = Color::query()->select('id', 'name', 'name_ru', 'hex_code')->orderBy('name')->get();
 
-        $makeUrl = function ($m) {
-            try {
-                if ($m->disk === 'local') {
-                    return $m->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
-                }
-            } catch (\Throwable $e) {
-                // ignore, fallback below
-            }
-            return $m->getUrl();
-        };
+        $makeUrl = fn($m, $conv = '') => MediaUrl::url($m, $conv);
 
         $photos = $auto->getMedia('photos')->map(fn($m) => [
             'id' => $m->id,
-            'url' => $makeUrl($m),
+            'url' => $makeUrl($m, 'preview'),
+            'thumb_url' => $makeUrl($m, 'thumb'),
+            'full_url' => $makeUrl($m, 'large'),
             'name' => $m->name,
             'file_name' => $m->file_name,
         ])->values();

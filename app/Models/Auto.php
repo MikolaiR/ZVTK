@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Support\MediaLibrary\AutoMediaConversions;
 
 #[ObservedBy([AutoObserver::class])]
 class Auto extends Model implements HasMedia
@@ -85,6 +87,11 @@ class Auto extends Model implements HasMedia
         $this->addMediaCollection('photos')->useFallbackUrl('/images/not_photo.png')->useDisk('local');
         $this->addMediaCollection('videos')->useDisk('local');
         $this->addMediaCollection('documents')->useDisk('local');
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        (new AutoMediaConversions())->register($this);
     }
 
 }

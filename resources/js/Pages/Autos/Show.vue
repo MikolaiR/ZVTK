@@ -74,7 +74,7 @@
                 ]"
               >
                 <template v-if="s.kind === 'photo'">
-                  <img :src="s.url" class="h-full w-full object-cover" />
+                  <img :src="s.thumb_url || s.url" class="h-full w-full object-cover" />
                 </template>
                 <template v-else>
                   <div class="h-full w-full bg-black text-white flex items-center justify-center text-xs">Видео</div>

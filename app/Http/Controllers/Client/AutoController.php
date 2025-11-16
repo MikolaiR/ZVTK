@@ -17,6 +17,7 @@ use App\Http\Resources\AutoResource;
 use App\Services\Autos\CreateAutoService;
 use App\Filters\Autos\AutoFilters;
 use App\Enums\Statuses;
+use App\Support\MediaLibrary\MediaUrl;
 
 class AutoController extends Controller
 {
@@ -42,17 +43,7 @@ class AutoController extends Controller
         return Inertia::render('Autos/Index', [
             'autos' => $autos->through(function (Auto $a) {
                 $preview = $a->getFirstMedia('photos');
-                $previewUrl = null;
-                if ($preview) {
-                    try {
-                        if ($preview->disk === 'local') {
-                            $previewUrl = $preview->getTemporaryUrl(now()->addMinutes((int) config('media-library.temporary_url_default_lifetime', 5)));
-                        }
-                    } catch (\Throwable $e) {
-                        // ignore, fallback to getUrl
-                    }
-                    $previewUrl = $previewUrl ?: $preview->getUrl();
-                }
+                $previewUrl = $preview ? MediaUrl::url($preview, 'thumb') : null;
 
                 return [
                     'id' => $a->id,
