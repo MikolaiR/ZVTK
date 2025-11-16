@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProviderController;
 use App\Http\Controllers\Admin\ParkingController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\BrandAndModelController;
@@ -150,4 +151,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/parkings/{parking}/prices', [ParkingController::class, 'storePrice'])->name('parkings.prices.store');
     Route::put('/parkings/{parking}/prices/{price}', [ParkingController::class, 'updatePrice'])->name('parkings.prices.update');
     Route::delete('/parkings/{parking}/prices/{price}', [ParkingController::class, 'destroyPrice'])->name('parkings.prices.destroy');
+
+    // Customers (Таможни)
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
+    Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
+    Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
+    Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+    Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+    Route::post('/customers/{id}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
 });
