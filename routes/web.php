@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProviderController;
+use App\Http\Controllers\Admin\ParkingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\BrandAndModelController;
@@ -136,4 +137,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/providers/{provider}', [ProviderController::class, 'update'])->name('providers.update');
     Route::delete('/providers/{provider}', [ProviderController::class, 'destroy'])->name('providers.destroy');
     Route::post('/providers/{id}/restore', [ProviderController::class, 'restore'])->name('providers.restore');
+
+    // Parkings
+    Route::get('/parkings', [ParkingController::class, 'index'])->name('parkings.index');
+    Route::get('/parkings/create', [ParkingController::class, 'create'])->name('parkings.create');
+    Route::post('/parkings', [ParkingController::class, 'store'])->name('parkings.store');
+    Route::get('/parkings/{parking}/edit', [ParkingController::class, 'edit'])->name('parkings.edit');
+    Route::put('/parkings/{parking}', [ParkingController::class, 'update'])->name('parkings.update');
+    Route::delete('/parkings/{parking}', [ParkingController::class, 'destroy'])->name('parkings.destroy');
+
+    // Parking Prices
+    Route::post('/parkings/{parking}/prices', [ParkingController::class, 'storePrice'])->name('parkings.prices.store');
+    Route::put('/parkings/{parking}/prices/{price}', [ParkingController::class, 'updatePrice'])->name('parkings.prices.update');
+    Route::delete('/parkings/{parking}/prices/{price}', [ParkingController::class, 'destroyPrice'])->name('parkings.prices.destroy');
 });

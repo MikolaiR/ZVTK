@@ -15,6 +15,8 @@ class Parking extends Model
 {
     use SoftDeletes;
 
+    protected $guarded = [];
+
     public function prices(): HasMany
     {
         return $this->hasMany(Price::class);
