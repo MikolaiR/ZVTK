@@ -7,6 +7,9 @@
           <nav class="hidden md:flex items-center gap-4 text-sm text-gray-600">
             <Link href="/admin" class="hover:text-gray-900">Главная</Link>
             <Link href="/admin/users" class="hover:text-gray-900">Пользователи</Link>
+            <Link href="/admin/roles" class="hover:text-gray-900">Роли</Link>
+            <Link href="/admin/permissions" class="hover:text-gray-900">Пермишены</Link>
+            <Link href="/admin/autos" class="hover:text-gray-900">Автомобили</Link>
             <Link href="/admin/auto-brands" class="hover:text-gray-900">Бренды</Link>
             <Link href="/admin/auto-models" class="hover:text-gray-900">Модели</Link>
             <Link href="/admin/companies" class="hover:text-gray-900">Компании</Link>

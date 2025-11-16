@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AutoBrandController;
+use App\Http\Controllers\Admin\AutoController as AdminAutoController;
 use App\Http\Controllers\Admin\AutoModelController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CompanyController;
@@ -61,6 +62,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/users/{user}/roles', [UserController::class, 'syncRoles'])->name('users.roles.sync');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+
+    // Admin Autos
+    Route::get('/autos', [AdminAutoController::class, 'index'])->name('autos.index');
+    // Create is handled by client page per requirements: link to /autos/create
+    Route::get('/autos/{auto}/edit', [AdminAutoController::class, 'edit'])->name('autos.edit');
+    Route::put('/autos/{auto}', [AdminAutoController::class, 'update'])->name('autos.update');
+    Route::delete('/autos/{auto}', [AdminAutoController::class, 'destroy'])->name('autos.destroy');
+
+    // Auto Location Periods
+    Route::post('/autos/{auto}/periods', [AdminAutoController::class, 'storePeriod'])->name('autos.periods.store');
+    Route::put('/autos/{auto}/periods/{period}', [AdminAutoController::class, 'updatePeriod'])->name('autos.periods.update');
+    Route::post('/autos/{auto}/periods/{period}/close', [AdminAutoController::class, 'closePeriod'])->name('autos.periods.close');
+    Route::delete('/autos/{auto}/periods/{period}', [AdminAutoController::class, 'destroyPeriod'])->name('autos.periods.destroy');
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
