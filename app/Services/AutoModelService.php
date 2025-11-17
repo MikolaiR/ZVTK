@@ -48,7 +48,7 @@ class AutoModelService
     {
         return AutoModel::create([
             'name' => $data['name'],
-            'auto_brand_id' => (int) $data['auto_brand_id'],
+            'auto_brand_id' => $data['auto_brand_id'],
         ]);
     }
 
@@ -61,7 +61,7 @@ class AutoModelService
     {
         $model->update([
             'name' => $data['name'],
-            'auto_brand_id' => (int) $data['auto_brand_id'],
+            'auto_brand_id' => $data['auto_brand_id'],
         ]);
 
         return $model;
