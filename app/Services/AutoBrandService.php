@@ -44,6 +44,7 @@ class AutoBrandService
     public function create(array $data): AutoBrand
     {
         return AutoBrand::create([
+            'id' => strtoupper($data['name']),
             'name' => $data['name'],
         ]);
     }
@@ -56,6 +57,7 @@ class AutoBrandService
     public function update(AutoBrand $brand, array $data): AutoBrand
     {
         $brand->update([
+            'id' => strtoupper($data['name']),
             'name' => $data['name'],
         ]);
 
