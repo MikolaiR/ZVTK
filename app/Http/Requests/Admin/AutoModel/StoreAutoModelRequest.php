@@ -15,12 +15,8 @@ class StoreAutoModelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255',
-                Rule::unique('auto_models', 'name')->where(function ($q) {
-                    return $q->where('auto_brand_id', (int) $this->input('auto_brand_id'));
-                }),
-            ],
-            'auto_brand_id' => ['required', 'integer', 'exists:auto_brands,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'auto_brand_id' => ['required', 'string', 'exists:auto_brands,id'],
         ];
     }
 }
