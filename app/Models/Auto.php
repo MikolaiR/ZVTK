@@ -34,10 +34,34 @@ class Auto extends Model implements HasMedia
     {
         static::addGlobalScope('company_visibility', function (Builder $builder) {
             $user = Auth::user();
-            if ($user && ! $user->hasRole('admin')) {
+            if ($user && !$user->hasRole('admin')) {
                 $builder->where('company_id', $user->company_id);
             }
         });
+
+        static::addGlobalScope('status_visibility', function (Builder $builder) {
+            $user = Auth::user();
+            if ($user) {
+                $allowedStatuses = Statuses::allowedValuesFor($user);
+                if (!empty($allowedStatuses)) {
+                    $builder->whereIn('status', $allowedStatuses);
+                }
+            }
+        });
+    }
+
+    /**
+     * Scope to filter autos by user's allowed statuses.
+     */
+    public function scopeAllowedStatuses(Builder $query, ?User $user = null): Builder
+    {
+        $user = $user ?? Auth::user();
+
+        if ($user === null) {
+            return $query->whereRaw('1 = 0'); // Return no results
+        }
+
+        return $query->whereIn('status', Statuses::allowedValuesFor($user));
     }
 
     public function locationPeriods(): HasMany

@@ -3,7 +3,9 @@
 namespace App\Services\Client;
 
 use App\Enums\Statuses;
+use App\Models\User;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class HomeService
@@ -17,7 +19,7 @@ class HomeService
                 'label' => $s->lable(),
                 'background' => $s->backgroundImg(),
             ];
-        }, Statuses::cases());
+        }, Statuses::allowedFor(Auth::user()));
 
         return Inertia::render('Home', [
             'statuses' => $statuses,

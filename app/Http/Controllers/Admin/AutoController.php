@@ -28,6 +28,8 @@ class AutoController extends Controller
 {
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Auto::class);
+
         $search = (string) $request->query('search', '');
 
         $query = Auto::query()
@@ -74,6 +76,8 @@ class AutoController extends Controller
 
     public function edit(Request $request, Auto $auto): Response
     {
+        $this->authorize('view', $auto);
+
         $auto->load([
             'model:id,auto_brand_id,name',
             'model.brand:id,name',
