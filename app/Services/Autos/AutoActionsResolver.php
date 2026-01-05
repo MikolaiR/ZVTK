@@ -18,6 +18,15 @@ class AutoActionsResolver
 
     public const UI_STORAGE_COST = 'storage_cost';
 
+    public const PERMISSION_TRANSITION_MOVE_TO_CUSTOMS = 'transition_move_to_customs';
+    public const PERMISSION_TRANSITION_MOVE_TO_PARKING = 'transition_move_to_parking';
+    public const PERMISSION_TRANSITION_ACCEPT_AT_PARKING = 'transition_accept_at_parking';
+    public const PERMISSION_TRANSITION_MOVE_TO_CUSTOMS_FROM_PARKING = 'transition_move_to_customs_from_parking';
+    public const PERMISSION_TRANSITION_MOVE_TO_OTHER_PARKING = 'transition_move_to_other_parking';
+    public const PERMISSION_TRANSITION_SELL = 'transition_sell';
+    public const PERMISSION_TRANSITION_SAVE_FILES = 'transition_save_files';
+    public const PERMISSION_VIEW_STORAGE_COST = 'view_storage_cost';
+
     /**
      * @return array<int, array{key:string,label:string,variant?:string|null}>
      */
@@ -72,13 +81,13 @@ class AutoActionsResolver
         $status = $auto->status;
 
         return match ($action) {
-            self::ACTION_MOVE_TO_CUSTOMS => $status === Statuses::Delivery,
-            self::ACTION_MOVE_TO_PARKING => $status === Statuses::Customer,
-            self::ACTION_ACCEPT_AT_PARKING => $status === Statuses::DeliveryToParking,
-            self::ACTION_MOVE_TO_CUSTOMS_FROM_PARKING => $status === Statuses::Parking,
-            self::ACTION_MOVE_TO_OTHER_PARKING => $status === Statuses::Parking,
-            self::ACTION_SELL => ($status === Statuses::Customer || $status === Statuses::Parking),
-            self::ACTION_SAVE_FILES => true,
+            self::ACTION_MOVE_TO_CUSTOMS => $status === Statuses::Delivery && $user->can(self::PERMISSION_TRANSITION_MOVE_TO_CUSTOMS),
+            self::ACTION_MOVE_TO_PARKING => $status === Statuses::Customer && $user->can(self::PERMISSION_TRANSITION_MOVE_TO_PARKING),
+            self::ACTION_ACCEPT_AT_PARKING => $status === Statuses::DeliveryToParking && $user->can(self::PERMISSION_TRANSITION_ACCEPT_AT_PARKING),
+            self::ACTION_MOVE_TO_CUSTOMS_FROM_PARKING => $status === Statuses::Parking && $user->can(self::PERMISSION_TRANSITION_MOVE_TO_CUSTOMS_FROM_PARKING),
+            self::ACTION_MOVE_TO_OTHER_PARKING => $status === Statuses::Parking && $user->can(self::PERMISSION_TRANSITION_MOVE_TO_OTHER_PARKING),
+            self::ACTION_SELL => ($status === Statuses::Customer || $status === Statuses::Parking) && $user->can(self::PERMISSION_TRANSITION_SELL),
+            self::ACTION_SAVE_FILES => $user->can(self::PERMISSION_TRANSITION_SAVE_FILES),
             default => false,
         };
     }
@@ -87,6 +96,6 @@ class AutoActionsResolver
     {
         return $user->can('update', $auto)
             && ($auto->status === Statuses::Parking || $auto->status === Statuses::Sale)
-            && true;
+            && $user->can(self::PERMISSION_VIEW_STORAGE_COST);
     }
 }

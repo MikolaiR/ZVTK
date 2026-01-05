@@ -27,10 +27,6 @@ class AutoTransitionController extends Controller
         $this->authorize('update', $auto);
 
         $action = (string) $request->input('action');
-
-        if (! app(AutoActionsResolver::class)->canPerformTransition($user, $auto, $action)) {
-            abort(403);
-        }
         $map = [
             'move_to_customs' => MoveToCustomsTransition::class,
             'move_to_parking' => MoveToParkingTransition::class,
@@ -42,6 +38,10 @@ class AutoTransitionController extends Controller
         ];
 
         abort_if(! isset($map[$action]), 422, 'Unknown action');
+
+        if (! app(AutoActionsResolver::class)->canPerformTransition($user, $auto, $action)) {
+            abort(403);
+        }
 
         /** @var \App\Services\Autos\Transitions\AutoTransition $service */
         $service = app($map[$action]);
