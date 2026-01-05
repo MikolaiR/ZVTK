@@ -28,7 +28,9 @@ class ParkingCostCalculator
         foreach ($periods as $p) {
             $parkingId = (int) $p->location_id;
             $start = Carbon::parse($p->started_at)->startOfDay();
-            $endExclusive = $p->ended_at ? Carbon::parse($p->ended_at)->startOfDay() : $asOfDate->copy()->startOfDay();
+            $endExclusive = $p->ended_at
+                ? Carbon::parse($p->ended_at)->startOfDay()->addDay()
+                : $asOfDate->copy()->startOfDay()->addDay();
             if ($endExclusive->lessThanOrEqualTo($start)) {
                 continue;
             }
