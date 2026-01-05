@@ -11,16 +11,19 @@ use App\Services\Autos\Transitions\MoveToCustomsFromParkingTransition;
 use App\Services\Autos\Transitions\MoveToCustomsTransition;
 use App\Services\Autos\Transitions\MoveToOtherParkingTransition;
 use App\Services\Autos\Transitions\MoveToParkingTransition;
+use App\Services\Autos\Transitions\SaveFilesTransition;
 use App\Services\Autos\Transitions\SellTransition;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class AutoTransitionController extends Controller
 {
     public function store(TransitionRequest $request, Auto $auto): RedirectResponse
     {
         $user = $request->user();
+
+        $this->authorize('update', $auto);
 
         $action = (string) $request->input('action');
         $map = [
@@ -30,6 +33,7 @@ class AutoTransitionController extends Controller
             'move_to_customs_from_parking' => MoveToCustomsFromParkingTransition::class,
             'move_to_other_parking' => MoveToOtherParkingTransition::class,
             'sell' => SellTransition::class,
+            'save_files' => SaveFilesTransition::class,
         ];
 
         abort_if(! isset($map[$action]), 422, 'Unknown action');

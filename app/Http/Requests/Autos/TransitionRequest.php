@@ -8,7 +8,10 @@ class TransitionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+        $auto = $this->route('auto');
+
+        return $user !== null && $auto !== null && $user->can('update', $auto);
     }
 
     public function rules(): array
@@ -16,7 +19,7 @@ class TransitionRequest extends FormRequest
         $action = (string) $this->input('action');
 
         $base = [
-            'action' => ['required', 'string', 'in:move_to_customs,move_to_parking,accept_at_parking,move_to_customs_from_parking,move_to_other_parking,sell'],
+            'action' => ['required', 'string', 'in:move_to_customs,move_to_parking,accept_at_parking,move_to_customs_from_parking,move_to_other_parking,sell,save_files'],
             'note' => ['nullable', 'string', 'max:2000'],
             'photos.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'videos.*' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:51200'],
@@ -45,6 +48,9 @@ class TransitionRequest extends FormRequest
                 $specific = [
                     'sold_at' => ['nullable', 'date'],
                 ];
+                break;
+            case 'save_files':
+                $specific = [];
                 break;
         }
 

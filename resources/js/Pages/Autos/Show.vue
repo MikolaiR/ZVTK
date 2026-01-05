@@ -35,7 +35,8 @@
                 <template v-else-if="isSale">
                   <ClientButton @click="openStorageCost" class="w-full" variant="outline">Стоимость хранения</ClientButton>
                 </template>
-                <ClientButton class="w-full" variant="outline">Скачать документы ZIP</ClientButton>
+                <ClientButton @click="openSaveFiles" class="w-full" variant="outline">Добавить файлы</ClientButton>
+                <!-- <ClientButton class="w-full" variant="outline">Скачать документы ZIP</ClientButton> -->
               </div>
             </Card>
           </div>
@@ -321,6 +322,17 @@
         </template>
       </Modal>
 
+      <!-- SaveFiles -->
+      <Modal :open="modals.saveFiles" title="Добавление файлов" @close="closeAll">
+        <div class="space-y-4">
+          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+        </div>
+        <template #footer>
+          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
+          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
+        </template>
+      </Modal>
+
       <!-- Storage cost -->
       <Modal :open="modals.storage" title="Стоимость хранения" size="lg" @close="closeAll">
         <div class="space-y-4">
@@ -394,6 +406,7 @@ const modals = reactive({
   moveToOtherParking: false,
   sell: false,
   storage: false,
+  saveFiles: false,
 })
 
 // Shared upload helpers
@@ -450,6 +463,7 @@ const openMoveToCustomsFromParking = () => { closeAll(); form.action = 'move_to_
 const openMoveToOtherParking = () => { closeAll(); form.action = 'move_to_other_parking'; modals.moveToOtherParking = true }
 const openSell = () => { closeAll(); form.action = 'sell'; form.sold_at = new Date().toISOString().slice(0,10); modals.sell = true }
 const openStorageCost = () => { closeAll(); modals.storage = true; loadStorage() }
+const openSaveFiles = () => { closeAll(); form.action = 'save_files'; modals.saveFiles = true }
 
 const currentParkingId = computed(() => props.auto.current_location && props.auto.current_location.type_label === 'Стоянка' ? props.auto.current_location.location_id : null)
 const availableParkings = computed(() => props.parkings.filter(p => !currentParkingId.value || p.id !== currentParkingId.value))
