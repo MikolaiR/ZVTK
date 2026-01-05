@@ -185,153 +185,22 @@
         </section>
       </div>
 
-      <!-- Move to Customs -->
-      <Modal :open="modals.moveToCustoms" title="Переместить на таможню" @close="closeAll">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1">Таможня</label>
-            <select v-model="form.customer_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
-              <option :value="null" disabled>Выберите таможню</option>
-              <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
-            <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Дата прибытия</label>
-            <input type="date" v-model="form.arrival_date" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
-            <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
-          </div>
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- Move to Parking -->
-      <Modal :open="modals.moveToParking" title="Переместить на стоянку" @close="closeAll">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1">Стоянка</label>
-            <select v-model="form.parking_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
-              <option :value="null" disabled>Выберите стоянку</option>
-              <option v-for="p in parkings" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
-            <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
-          </div>
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- Accept at Parking -->
-      <Modal :open="modals.acceptAtParking" title="Принять на стоянку" @close="closeAll">
-        <div class="space-y-4">
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- Move to Customs from Parking -->
-      <Modal :open="modals.moveToCustomsFromParking" title="Переместить на таможню" @close="closeAll">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1">Таможня</label>
-            <select v-model="form.customer_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
-              <option :value="null" disabled>Выберите таможню</option>
-              <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
-            <p v-if="form.errors.customer_id" class="text-sm text-red-600 mt-1">{{ form.errors.customer_id }}</p>
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Дата прибытия</label>
-            <input type="date" v-model="form.arrival_date" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
-            <p v-if="form.errors.arrival_date" class="text-sm text-red-600 mt-1">{{ form.errors.arrival_date }}</p>
-          </div>
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing || !form.customer_id" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- Move to Other Parking -->
-      <Modal :open="modals.moveToOtherParking" title="Переместить на другую стоянку" @close="closeAll">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1">Стоянка</label>
-            <select v-model="form.parking_id" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]">
-              <option :value="null" disabled>Выберите стоянку</option>
-              <option v-for="p in availableParkings" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
-            <p v-if="form.errors.parking_id" class="text-sm text-red-600 mt-1">{{ form.errors.parking_id }}</p>
-          </div>
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing || !form.parking_id" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- Sell -->
-      <Modal :open="modals.sell" title="Передана владельцу" @close="closeAll">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1">Дата передачи</label>
-            <input type="date" v-model="form.sold_at" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]" />
-            <p v-if="form.errors.sold_at" class="text-sm text-red-600 mt-1">{{ form.errors.sold_at }}</p>
-          </div>
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-          <div>
-            <label class="block text-sm mb-1">Комментарий</label>
-            <textarea v-model="form.note" rows="3" class="w-full rounded-md border border-[var(--border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"></textarea>
-          </div>
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
-
-      <!-- SaveFiles -->
-      <Modal :open="modals.saveFiles" title="Добавление файлов" @close="closeAll">
-        <div class="space-y-4">
-          <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
-        </div>
-        <template #footer>
-          <ClientButton variant="outline" @click="closeAll">Отмена</ClientButton>
-          <ClientButton :disabled="form.processing" @click="submit">Подтвердить</ClientButton>
-        </template>
-      </Modal>
+      <AutoTransitionsModal
+        :open="transition.open"
+        :action="transition.action"
+        :form="form"
+        :upload="upload"
+        :customers="customers"
+        :parkings="parkings"
+        :availableParkings="availableParkings"
+        :errors="form.errors"
+        :processing="form.processing"
+        @close="closeAll"
+        @submit="submit"
+        @drop-file="onDrop"
+        @pick-file="onFilesSelected"
+        @remove="removeFile"
+      />
 
       <!-- Storage cost -->
       <Modal :open="modals.storage" title="Стоимость хранения" size="lg" @close="closeAll">
@@ -364,11 +233,11 @@
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, reactive } from 'vue'
-import Uploads from '../../Components/Uploads.vue'
 import Card from '../../Components/Card.vue'
 import StatusBadge from '../../Components/StatusBadge.vue'
 import ClientButton from '../../Components/ClientButton.vue'
 import Modal from '../../Components/Modal.vue'
+import AutoTransitionsModal from '../../Components/Autos/AutoTransitionsModal.vue'
 
 const props = defineProps({
   auto: { type: Object, required: true },
@@ -398,16 +267,8 @@ const go = (i) => { if (!slides.value.length) return; slideIndex.value = i }
 const fmt = (s) => { if (!s) return ''; const d = new Date(s); if (Number.isNaN(+d)) return s; return d.toLocaleString('ru-RU') }
 
 // Modals state
-const modals = reactive({
-  moveToCustoms: false,
-  moveToParking: false,
-  acceptAtParking: false,
-  moveToCustomsFromParking: false,
-  moveToOtherParking: false,
-  sell: false,
-  storage: false,
-  saveFiles: false,
-})
+const modals = reactive({ storage: false })
+const transition = reactive({ open: false, action: '' })
 
 // Shared upload helpers
 const upload = reactive({ photos: [], videos: [], documents: [] })
@@ -453,17 +314,17 @@ const submit = () => {
     })
 }
 
-const closeAll = () => { Object.keys(modals).forEach(k => modals[k] = false); form.reset('action','customer_id','arrival_date','parking_id','sold_at','note'); resetUploads() }
+const closeAll = () => { modals.storage = false; transition.open = false; transition.action = ''; form.reset('action','customer_id','arrival_date','parking_id','sold_at','note'); resetUploads() }
 
 // Openers
-const openMoveToCustoms = () => { closeAll(); form.action = 'move_to_customs'; form.arrival_date = new Date().toISOString().slice(0,10); modals.moveToCustoms = true }
-const openMoveToParking = () => { closeAll(); form.action = 'move_to_parking'; modals.moveToParking = true }
-const openAcceptAtParking = () => { closeAll(); form.action = 'accept_at_parking'; modals.acceptAtParking = true }
-const openMoveToCustomsFromParking = () => { closeAll(); form.action = 'move_to_customs_from_parking'; form.arrival_date = new Date().toISOString().slice(0,10); modals.moveToCustomsFromParking = true }
-const openMoveToOtherParking = () => { closeAll(); form.action = 'move_to_other_parking'; modals.moveToOtherParking = true }
-const openSell = () => { closeAll(); form.action = 'sell'; form.sold_at = new Date().toISOString().slice(0,10); modals.sell = true }
+const openMoveToCustoms = () => { closeAll(); form.action = 'move_to_customs'; form.arrival_date = new Date().toISOString().slice(0,10); transition.action = 'move_to_customs'; transition.open = true }
+const openMoveToParking = () => { closeAll(); form.action = 'move_to_parking'; transition.action = 'move_to_parking'; transition.open = true }
+const openAcceptAtParking = () => { closeAll(); form.action = 'accept_at_parking'; transition.action = 'accept_at_parking'; transition.open = true }
+const openMoveToCustomsFromParking = () => { closeAll(); form.action = 'move_to_customs_from_parking'; form.arrival_date = new Date().toISOString().slice(0,10); transition.action = 'move_to_customs_from_parking'; transition.open = true }
+const openMoveToOtherParking = () => { closeAll(); form.action = 'move_to_other_parking'; transition.action = 'move_to_other_parking'; transition.open = true }
+const openSell = () => { closeAll(); form.action = 'sell'; form.sold_at = new Date().toISOString().slice(0,10); transition.action = 'sell'; transition.open = true }
 const openStorageCost = () => { closeAll(); modals.storage = true; loadStorage() }
-const openSaveFiles = () => { closeAll(); form.action = 'save_files'; modals.saveFiles = true }
+const openSaveFiles = () => { closeAll(); form.action = 'save_files'; transition.action = 'save_files'; transition.open = true }
 
 const currentParkingId = computed(() => props.auto.current_location && props.auto.current_location.type_label === 'Стоянка' ? props.auto.current_location.location_id : null)
 const availableParkings = computed(() => props.parkings.filter(p => !currentParkingId.value || p.id !== currentParkingId.value))
