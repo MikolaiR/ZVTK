@@ -15,29 +15,7 @@
             </Card>
 
             <Card title="Действия">
-              <div class="space-y-2">
-                <template v-if="isDelivery">
-                  <ClientButton @click="openMoveToCustoms" class="w-full">Переместить на таможню</ClientButton>
-                </template>
-                <template v-else-if="isCustomer">
-                  <ClientButton @click="openMoveToParking" class="w-full">Переместить на стоянку</ClientButton>
-                  <ClientButton @click="openSell" class="w-full" variant="danger">Передана владельцу</ClientButton>
-                </template>
-                <template v-else-if="isDeliveryToParking">
-                  <ClientButton @click="openAcceptAtParking" class="w-full">Принять на стоянку</ClientButton>
-                </template>
-                <template v-else-if="isParking">
-                  <ClientButton @click="openSell" class="w-full">Передана владельцу</ClientButton>
-                  <ClientButton @click="openMoveToCustomsFromParking" class="w-full" variant="danger">Переместить на таможню</ClientButton>
-                  <ClientButton @click="openMoveToOtherParking" class="w-full">Переместить на другую стоянку</ClientButton>
-                  <ClientButton @click="openStorageCost" class="w-full" variant="outline">Рассчитать стоимость хранения</ClientButton>
-                </template>
-                <template v-else-if="isSale">
-                  <ClientButton @click="openStorageCost" class="w-full" variant="outline">Стоимость хранения</ClientButton>
-                </template>
-                <ClientButton @click="openSaveFiles" class="w-full" variant="outline">Добавить файлы</ClientButton>
-                <!-- <ClientButton class="w-full" variant="outline">Скачать документы ZIP</ClientButton> -->
-              </div>
+              <AutoActionsPanel :actions="actions" @action="handleAction" />
             </Card>
           </div>
         </aside>
@@ -238,19 +216,14 @@ import StatusBadge from '../../Components/StatusBadge.vue'
 import ClientButton from '../../Components/ClientButton.vue'
 import Modal from '../../Components/Modal.vue'
 import AutoTransitionsModal from '../../Components/Autos/AutoTransitionsModal.vue'
+import AutoActionsPanel from '../../Components/Autos/AutoActionsPanel.vue'
 
 const props = defineProps({
   auto: { type: Object, required: true },
   parkings: { type: Array, default: () => [] },
   customers: { type: Array, default: () => [] },
+  actions: { type: Array, default: () => [] },
 })
-
-const Statuses = { Delivery: 1, Customer: 2, DeliveryToParking: 3, Parking: 4, Sale: 5 }
-const isDelivery = computed(() => props.auto.status == Statuses.Delivery)
-const isCustomer = computed(() => props.auto.status == Statuses.Customer)
-const isDeliveryToParking = computed(() => props.auto.status == Statuses.DeliveryToParking)
-const isParking = computed(() => props.auto.status == Statuses.Parking)
-const isSale = computed(() => props.auto.status == Statuses.Sale)
 
 const slideIndex = ref(0)
 const slides = computed(() => {
@@ -315,6 +288,37 @@ const submit = () => {
 }
 
 const closeAll = () => { modals.storage = false; transition.open = false; transition.action = ''; form.reset('action','customer_id','arrival_date','parking_id','sold_at','note'); resetUploads() }
+
+const handleAction = (key) => {
+  if (key === 'storage_cost') {
+    openStorageCost()
+    return
+  }
+
+  switch (key) {
+    case 'move_to_customs':
+      openMoveToCustoms();
+      break
+    case 'move_to_parking':
+      openMoveToParking();
+      break
+    case 'accept_at_parking':
+      openAcceptAtParking();
+      break
+    case 'move_to_customs_from_parking':
+      openMoveToCustomsFromParking();
+      break
+    case 'move_to_other_parking':
+      openMoveToOtherParking();
+      break
+    case 'sell':
+      openSell();
+      break
+    case 'save_files':
+      openSaveFiles();
+      break
+  }
+}
 
 // Openers
 const openMoveToCustoms = () => { closeAll(); form.action = 'move_to_customs'; form.arrival_date = new Date().toISOString().slice(0,10); transition.action = 'move_to_customs'; transition.open = true }

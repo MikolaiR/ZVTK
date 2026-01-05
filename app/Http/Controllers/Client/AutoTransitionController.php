@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Autos\TransitionRequest;
 use App\Models\Auto;
 use App\Services\Autos\ParkingCostCalculator;
+use App\Services\Autos\AutoActionsResolver;
 use App\Services\Autos\Transitions\AcceptAtParkingTransition;
 use App\Services\Autos\Transitions\MoveToCustomsFromParkingTransition;
 use App\Services\Autos\Transitions\MoveToCustomsTransition;
@@ -26,6 +27,10 @@ class AutoTransitionController extends Controller
         $this->authorize('update', $auto);
 
         $action = (string) $request->input('action');
+
+        if (! app(AutoActionsResolver::class)->canPerformTransition($user, $auto, $action)) {
+            abort(403);
+        }
         $map = [
             'move_to_customs' => MoveToCustomsTransition::class,
             'move_to_parking' => MoveToParkingTransition::class,

@@ -15,6 +15,7 @@ use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Resources\AutoResource;
 use App\Services\Autos\CreateAutoService;
+use App\Services\Autos\AutoActionsResolver;
 use App\Filters\Autos\AutoFilters;
 use App\Enums\Statuses;
 use App\Support\MediaLibrary\MediaUrl;
@@ -81,10 +82,13 @@ class AutoController extends Controller
         $parkings = Parking::query()->select('id', 'name')->orderBy('name')->get();
 
         $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
+
+        $actions = $request->user() ? app(AutoActionsResolver::class)->resolve($request->user(), $auto) : [];
         return Inertia::render('Autos/Show', [
             'auto' => $resource,
             'parkings' => $parkings,
             'customers' => $customers,
+            'actions' => $actions,
         ]);
     }
 
