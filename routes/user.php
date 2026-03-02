@@ -6,9 +6,11 @@ use App\Http\Controllers\Client\AutoTransitionController;
 use App\Http\Controllers\Client\ProfileController;
 use App\Services\Client\HomeService;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
     Route::get('/', [HomeService::class, 'index'])->name('home');
+    Route::get('/instructions', fn () => Inertia::render('Instructions/Index'))->name('instructions.index');
 
     Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
 
