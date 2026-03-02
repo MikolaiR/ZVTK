@@ -29,9 +29,9 @@ class CreateRequest extends FormRequest
             'vin' => ['required', 'string', 'max:255', 'unique:autos,vin'],
             'year' => ['nullable', 'integer', 'digits:4', 'min:1900', 'max:'.date('Y')],
             'price' => ['nullable', 'integer', 'min:0'],
-            'photos.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'photos.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:51200'],
             'videos.*' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:51200'],
-            'documents.*' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:20480'],
+            'documents.*' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:51200'],
         ];
     }
 }

@@ -220,11 +220,10 @@
           </div>
         </section>
 
-        <Uploads :upload="upload" :errors="form.errors" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
+        <Uploads :upload="upload" :errors="form.errors" :progress="form.progress" @drop-file="onDrop" @pick-file="onFilesSelected" @remove="removeFile" />
 
         <div class="flex items-center gap-3">
           <AppButton type="submit" :disabled="form.processing">Сохранить</AppButton>
-          <span v-if="form.progress" class="text-sm text-gray-600">Загрузка: {{ form.progress.percentage }}%</span>
         </div>
       </form>
     </div>

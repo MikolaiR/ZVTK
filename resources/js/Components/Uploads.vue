@@ -6,6 +6,13 @@
       <button type="button" class="mt-2 rounded-md border px-3 py-1.5 hover:bg-gray-50" @click="openPicker">Выбрать файлы</button>
       <input ref="fileInput" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx" class="hidden" @change="onInputChange" />
 
+      <div v-if="hasProgress" class="mt-3 text-left">
+        <div class="mb-1 text-xs text-gray-600">Загрузка: {{ progressPercentage }}%</div>
+        <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+          <div class="h-full rounded-full bg-blue-600 transition-all duration-200" :style="{ width: `${progressPercentage}%` }" />
+        </div>
+      </div>
+
       <div v-if="allFiles.length" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         <div v-for="(f,i) in allFiles" :key="i" class="relative">
           <template v-if="isImage(f)">
@@ -35,6 +42,7 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   upload: { type: Object, required: true },
   errors: { type: Object, default: () => ({}) },
+  progress: { type: Object, default: null },
 })
 const emit = defineEmits(['drop-file','pick-file','remove'])
 
@@ -46,6 +54,13 @@ const allFiles = computed(() => [
   ...(props.upload.videos || []),
   ...(props.upload.documents || []),
 ])
+
+const progressPercentage = computed(() => {
+  const percentage = Number(props.progress?.percentage)
+  if (!Number.isFinite(percentage)) return 0
+  return Math.max(0, Math.min(100, Math.round(percentage)))
+})
+const hasProgress = computed(() => props.progress && Number.isFinite(Number(props.progress?.percentage)))
 
 const isImage = (f) => ((f && f.type) || '').startsWith('image/')
 const isVideo = (f) => ((f && f.type) || '').startsWith('video/')

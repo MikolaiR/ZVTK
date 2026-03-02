@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin\Auto;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreAutoRequest extends FormRequest
 {
@@ -24,11 +23,11 @@ class StoreAutoRequest extends FormRequest
             'price' => ['nullable', 'integer', 'min:0'],
 
             'photos' => ['array'],
-            'photos.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp'],
+            'photos.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp', 'max:51200'],
             'videos' => ['array'],
-            'videos.*' => ['file', 'mimetypes:video/mp4,video/quicktime,video/x-msvideo'],
+            'videos.*' => ['file', 'mimetypes:video/mp4,video/quicktime,video/x-msvideo', 'max:51200'],
             'documents' => ['array'],
-            'documents.*' => ['file', 'mimetypes:application/pdf,image/jpeg,image/png'],
+            'documents.*' => ['file', 'mimetypes:application/pdf,image/jpeg,image/png', 'max:51200'],
         ];
     }
 }
