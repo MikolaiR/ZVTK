@@ -16,7 +16,7 @@
             @endcan
         </div>
 
-        <form method="GET" action="{{ route('autos.index') }}" class="client-card grid gap-3 p-4 sm:grid-cols-3">
+        {{-- <form method="GET" action="{{ route('autos.index') }}" class="client-card grid gap-3 p-4 sm:grid-cols-3">
             <div>
                 <label for="vin" class="mb-1 block text-sm text-slate-600">VIN</label>
                 <input id="vin" name="vin" value="{{ $filters['vin'] ?? '' }}" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
@@ -36,7 +36,7 @@
                 <button type="submit" class="client-btn client-btn-primary">Применить</button>
                 <a href="{{ route('autos.index') }}" class="client-btn client-btn-outline">Сброс</a>
             </div>
-        </form>
+        </form> --}}
 
         <div class="client-card overflow-hidden">
             <div class="overflow-x-auto">

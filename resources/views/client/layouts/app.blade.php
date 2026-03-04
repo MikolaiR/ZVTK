@@ -98,7 +98,7 @@
 >
     <header class="sticky top-0 z-20 border-b border-(--client-border) bg-white/90 backdrop-blur">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-            <a href="/" class="text-lg font-bold tracking-tight text-(--client-primary)">AutoDom</a>
+            <a href="/" class="text-lg font-bold tracking-tight text-(--client-primary)">ZVTK</a>
 
             <div class="flex-1">
                 <label class="sr-only" for="client-vin-search">Поиск по VIN</label>

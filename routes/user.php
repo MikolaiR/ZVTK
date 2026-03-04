@@ -10,7 +10,13 @@ use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
     Route::get('/', [HomeService::class, 'index'])->name('home');
-    Route::get('/instructions', fn () => Inertia::render('Instructions/Index'))->name('instructions.index');
+    Route::get('/instructions', function () {
+        if (config('features.client_blade_enabled')) {
+            return view('client.instructions');
+        }
+
+        return Inertia::render('Instructions/Index');
+    })->name('instructions.index');
 
     Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
 
