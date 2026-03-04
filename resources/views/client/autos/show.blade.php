@@ -185,7 +185,7 @@
                     <button type="button" class="rounded p-1 text-slate-500 hover:bg-slate-100" @click="closeTransition">✕</button>
                 </div>
 
-                <form :action="`/autos/${autoId}/transitions`" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <form :action="`/autos/${autoId}/transitions`" method="POST" enctype="multipart/form-data" class="space-y-4" @submit="submitWithProgress">
                     @csrf
                     <input type="hidden" name="action" :value="activeAction">
 
@@ -231,23 +231,7 @@
                         </div>
                     </template>
 
-                    <div class="grid gap-3 md:grid-cols-3">
-                        <div>
-                            <label class="mb-1 block text-sm text-slate-600">Фото</label>
-                            <input type="file" name="photos[]" multiple accept="image/*" class="block w-full text-xs">
-                            @error('photos.0') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm text-slate-600">Видео</label>
-                            <input type="file" name="videos[]" multiple accept="video/*" class="block w-full text-xs">
-                            @error('videos.0') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm text-slate-600">Документы</label>
-                            <input type="file" name="documents[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" class="block w-full text-xs">
-                            @error('documents.0') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
+                    @include('client.components.file-upload-box')
 
                     <template x-if="activeAction !== 'save_files'">
                         <div>
@@ -259,7 +243,15 @@
 
                     <div class="flex items-center justify-end gap-2">
                         <button type="button" class="client-btn client-btn-outline" @click="closeTransition">Отмена</button>
-                        <button type="submit" class="client-btn client-btn-primary" :disabled="transitionDisabled()">Подтвердить</button>
+                        <button
+                            type="submit"
+                            class="client-btn client-btn-primary"
+                            :disabled="transitionDisabled() || uploading"
+                            :class="uploading ? 'opacity-60 cursor-not-allowed' : ''"
+                        >
+                            <span x-show="!uploading">Подтвердить</span>
+                            <span x-show="uploading">Загрузка...</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -335,6 +327,7 @@
                 transitionOpen: false,
                 storageOpen: false,
                 storageLoading: false,
+                ...window.createUnifiedUploadState(),
                 activeAction: '',
                 form: {
                     customer_id: config.oldCustomerId || '',
@@ -413,6 +406,7 @@
                         return;
                     }
 
+                    this.clearUploadState();
                     this.activeAction = key;
                     this.transitionOpen = true;
                 },
@@ -420,6 +414,7 @@
                 closeTransition() {
                     this.transitionOpen = false;
                     this.activeAction = '';
+                    this.clearUploadState();
                 },
 
                 async openStorage() {
