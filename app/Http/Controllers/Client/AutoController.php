@@ -9,6 +9,7 @@ use App\Models\AutoBrand;
 use App\Models\Color;
 use App\Models\Customer;
 use App\Models\Parking;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,7 +27,7 @@ class AutoController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|View
     {
         $filters = [
             'vin' => (string) $request->get('vin', ''),
@@ -41,7 +42,7 @@ class AutoController extends Controller
 
         $autos = $query->paginate(20)->withQueryString();
 
-        return Inertia::render('Autos/Index', [
+        $viewData = [
             'autos' => $autos->through(function (Auto $a) {
                 $preview = $a->getFirstMedia('photos');
                 $previewUrl = $preview ? MediaUrl::url($preview, 'thumb') : null;
@@ -58,10 +59,16 @@ class AutoController extends Controller
                 'vin' => $filters['vin'],
                 'status' => $filters['status'],
             ],
-        ]);
+        ];
+
+        if (config('features.client_blade_enabled')) {
+            return view('client.autos.index', $viewData);
+        }
+
+        return Inertia::render('Autos/Index', $viewData);
     }
 
-    public function show(Request $request, Auto $auto): Response
+    public function show(Request $request, Auto $auto): Response|View
     {
         $auto->load([
             'model:id,auto_brand_id,name',
@@ -84,22 +91,35 @@ class AutoController extends Controller
         $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
 
         $actions = $request->user() ? app(AutoActionsResolver::class)->resolve($request->user(), $auto) : [];
-        return Inertia::render('Autos/Show', [
+        $viewData = [
             'auto' => $resource,
             'parkings' => $parkings,
             'customers' => $customers,
             'actions' => $actions,
-        ]);
+        ];
+
+        if (config('features.client_blade_enabled')) {
+            return view('client.autos.show', $viewData);
+        }
+
+        return Inertia::render('Autos/Show', $viewData);
     }
 
-    public function create(): Response
+    public function create(): Response|View
     {
         $brands = AutoBrand::query()->select('id', 'name')->orderBy('name')->get();
         $colors = Color::query()->select('id', 'name', 'name_ru', 'hex_code')->orderBy('name')->get();
-        return Inertia::render('Autos/Create', [
+
+        $viewData = [
             'brands' => $brands,
             'colors' => $colors,
-        ]);
+        ];
+
+        if (config('features.client_blade_enabled')) {
+            return view('client.autos.create', $viewData);
+        }
+
+        return Inertia::render('Autos/Create', $viewData);
     }
 
     public function store(CreateRequest $request): RedirectResponse
