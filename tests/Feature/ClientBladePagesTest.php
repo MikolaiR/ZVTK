@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\Statuses;
 use App\Models\Auto;
+use App\Models\AutoLocationPeriod;
+use App\Models\Parking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -93,6 +95,42 @@ class ClientBladePagesTest extends TestCase
         $response->assertOk();
         $response->assertViewIs('client.autos.show');
         $response->assertSee('Show Car');
+    }
+
+    public function test_autos_show_displays_status_with_current_location_and_collapsible_sections_collapsed_by_default(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+
+        $auto = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Parking Car',
+            'vin' => 'VIN-PARKING-200',
+            'status' => Statuses::Parking,
+        ]));
+
+        $parking = Parking::withoutEvents(fn () => Parking::query()->create([
+            'name' => 'ЗВТК мост',
+            'address' => 'Мост 1',
+        ]));
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $auto->id,
+            'location_type' => Parking::class,
+            'location_id' => $parking->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($user)->get("/autos/{$auto->id}");
+
+        $response->assertOk();
+        $response->assertSee('На стоянке ЗВТК мост');
+        $response->assertSee('<details data-section="status" class="client-card p-4" open>', false);
+        $response->assertSee('<details data-section="actions" class="client-card p-4" open>', false);
+        $response->assertSee('<details data-section="media" class="client-card p-4" open>', false);
+        $response->assertSee('data-section="info"', false);
+        $response->assertSee('data-section="history"', false);
+        $response->assertDontSee('<details data-section="info" class="client-card p-4" open>', false);
+        $response->assertDontSee('<details data-section="history" class="client-card p-4" open>', false);
     }
 
     /**

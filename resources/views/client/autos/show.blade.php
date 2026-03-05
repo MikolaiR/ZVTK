@@ -5,6 +5,8 @@
         $currentParkingId = ($auto['current_location']['type_label'] ?? null) === 'Стоянка'
             ? ($auto['current_location']['location_id'] ?? null)
             : null;
+        $currentLocationName = trim((string) ($auto['current_location']['name'] ?? ''));
+        $statusLabelWithLocation = trim((string) $auto['status_label'] . ($currentLocationName !== '' ? ' ' . $currentLocationName : ''));
 
         $availableParkings = collect($parkings)
             ->filter(fn ($parking) => ! $currentParkingId || (int) $parking['id'] !== (int) $currentParkingId)
@@ -43,15 +45,23 @@
 
         <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
             <aside class="order-1 space-y-3 md:order-2">
-                <div class="client-card p-4">
-                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Статус</h2>
-                    <span class="mt-3 inline-flex rounded px-2 py-0.5 text-xs text-white {{ $statusClasses[(int) $auto['status']] ?? 'bg-slate-800' }}">
-                        {{ $auto['status_label'] }}
-                    </span>
-                </div>
+                <details data-section="status" class="client-card p-4" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Статус</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
+                    <div class="mt-3">
+                        <span class="inline-flex rounded px-2 py-0.5 text-xs text-white {{ $statusClasses[(int) $auto['status']] ?? 'bg-slate-800' }}">
+                            {{ $statusLabelWithLocation }}
+                        </span>
+                    </div>
+                </details>
 
-                <div class="client-card p-4">
-                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Действия</h2>
+                <details data-section="actions" class="client-card p-4" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Действия</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
                     <div class="mt-3 space-y-2">
                         <template x-for="action in actions" :key="action.key">
                             <button
@@ -63,16 +73,19 @@
                             ></button>
                         </template>
                     </div>
-                </div>
+                </details>
             </aside>
 
             <section class="order-2 space-y-4 md:order-1 md:col-span-2">
-                <div class="client-card p-4">
-                    <h2 class="text-base font-semibold">Медиа</h2>
+                <details data-section="media" class="client-card p-4" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-base font-semibold">Медиа</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
 
                     <template x-if="slides.length">
-                        <div>
-                            <p class="mb-2 mt-1 text-sm text-slate-500"><span x-text="slideIndex + 1"></span> / <span x-text="slides.length"></span></p>
+                        <div class="mt-3">
+                            <p class="mb-2 text-sm text-slate-500"><span x-text="slideIndex + 1"></span> / <span x-text="slides.length"></span></p>
                             <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-black">
                                 <template x-if="currentSlide()?.kind === 'photo'">
                                     <img :src="currentSlide()?.url" alt="media" class="aspect-video w-full object-contain">
@@ -103,10 +116,13 @@
                     <template x-if="!slides.length">
                         <div class="mt-3 flex aspect-video items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-500">Нет медиа</div>
                     </template>
-                </div>
+                </details>
 
-                <div class="client-card p-4">
-                    <h2 class="text-base font-semibold">Документы</h2>
+                <details data-section="documents" class="client-card p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-base font-semibold">Документы</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
                     @if (!empty($auto['media']['documents']))
                         <ul class="mt-3 space-y-2">
                             @foreach ($auto['media']['documents'] as $document)
@@ -119,62 +135,73 @@
                     @else
                         <p class="mt-2 text-sm text-slate-500">Нет документов</p>
                     @endif
-                </div>
+                </details>
 
-                <div class="client-card p-4">
-                    <h2 class="text-base font-semibold">Информация</h2>
-                    <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                        <div><dt class="text-slate-500">VIN</dt><dd class="font-medium">{{ $auto['vin'] ?: '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Бренд / Модель</dt><dd class="font-medium">{{ trim(($auto['brand'] ?? '') . ' ' . ($auto['model'] ?? '')) ?: '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Цвет</dt><dd class="font-medium">{{ $auto['color'] ?: '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Год</dt><dd class="font-medium">{{ $auto['year'] ?: '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Цена</dt><dd class="font-medium">{{ $auto['price'] ? number_format((int) $auto['price'], 0, '.', ' ') . ' ₽' : '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Дата отправки</dt><dd class="font-medium">{{ $auto['departure_date'] ?: '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Компания</dt><dd class="font-medium">{{ $auto['company']['name'] ?? '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Отправитель</dt><dd class="font-medium">{{ $auto['sender']['name'] ?? '—' }}</dd></div>
-                        <div><dt class="text-slate-500">Перевозчик</dt><dd class="font-medium">{{ $auto['provider']['name'] ?? '—' }}</dd></div>
+                <details data-section="info" class="client-card p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-base font-semibold">Информация</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
+                    <dl class="mt-3 divide-y divide-slate-200 text-sm">
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">VIN</dt><dd class="text-right font-medium">{{ $auto['vin'] ?: '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Бренд / Модель</dt><dd class="text-right font-medium">{{ trim(($auto['brand'] ?? '') . ' ' . ($auto['model'] ?? '')) ?: '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Цвет</dt><dd class="text-right font-medium">{{ $auto['color'] ?: '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Год</dt><dd class="text-right font-medium">{{ $auto['year'] ?: '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Цена</dt><dd class="text-right font-medium">{{ $auto['price'] ? number_format((int) $auto['price'], 0, '.', ' ') . ' ₽' : '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Дата отправки</dt><dd class="text-right font-medium">{{ $auto['departure_date'] ?: '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Компания</dt><dd class="text-right font-medium">{{ $auto['company']['name'] ?? '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Отправитель</dt><dd class="text-right font-medium">{{ $auto['sender']['name'] ?? '—' }}</dd></div>
+                        <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Перевозчик</dt><dd class="text-right font-medium">{{ $auto['provider']['name'] ?? '—' }}</dd></div>
                     </dl>
-                </div>
+                </details>
 
-                <div class="client-card p-4">
-                    <h2 class="text-base font-semibold">Текущая локация</h2>
+                <details data-section="current-location" class="client-card p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-base font-semibold">Текущая локация</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
                     @if (!empty($auto['current_location']))
-                        <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                            <div><dt class="text-slate-500">Тип</dt><dd class="font-medium">{{ $auto['current_location']['type_label'] }}</dd></div>
-                            <div><dt class="text-slate-500">Название</dt><dd class="font-medium">{{ $auto['current_location']['name'] ?: '—' }}</dd></div>
-                            <div><dt class="text-slate-500">Статус</dt><dd class="font-medium">{{ $auto['current_location']['status_label'] ?: '—' }}</dd></div>
-                            <div><dt class="text-slate-500">Период</dt><dd class="font-medium">{{ $auto['current_location']['started_at'] ?: '—' }} — {{ $auto['current_location']['ended_at'] ?: 'н.в.' }}</dd></div>
-                            <div class="sm:col-span-2"><dt class="text-slate-500">Принял</dt><dd class="font-medium">{{ $auto['current_location']['accepted_by']['name'] ?? '—' }}</dd></div>
+                        <dl class="mt-3 divide-y divide-slate-200 text-sm">
+                            <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Тип</dt><dd class="text-right font-medium">{{ $auto['current_location']['type_label'] }}</dd></div>
+                            <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Название</dt><dd class="text-right font-medium">{{ $auto['current_location']['name'] ?: '—' }}</dd></div>
+                            <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Статус</dt><dd class="text-right font-medium">{{ $auto['current_location']['status_label'] ?: '—' }}</dd></div>
+                            <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Период</dt><dd class="text-right font-medium">{{ $auto['current_location']['started_at'] ?: '—' }} — {{ $auto['current_location']['ended_at'] ?: 'н.в.' }}</dd></div>
+                            <div class="flex items-start justify-between gap-3 py-2"><dt class="text-slate-500">Принял</dt><dd class="text-right font-medium">{{ $auto['current_location']['accepted_by']['name'] ?? '—' }}</dd></div>
                             @if (!empty($auto['current_location']['acceptance_note']))
-                                <div class="sm:col-span-2"><dt class="text-slate-500">Примечание</dt><dd class="font-medium">{{ $auto['current_location']['acceptance_note'] }}</dd></div>
+                                <div class="py-2"><dt class="text-slate-500">Примечание</dt><dd class="mt-1 font-medium">{{ $auto['current_location']['acceptance_note'] }}</dd></div>
                             @endif
                         </dl>
                     @else
                         <p class="mt-2 text-sm text-slate-500">Нет активной локации</p>
                     @endif
-                </div>
+                </details>
 
-                <div class="client-card p-4">
-                    <h2 class="text-base font-semibold">История перемещений</h2>
+                <details data-section="history" class="client-card p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <h2 class="text-base font-semibold">История перемещений</h2>
+                        <span class="text-xs text-slate-400">Показать</span>
+                    </summary>
                     @if (!empty($auto['periods']))
-                        <div class="mt-3 divide-y divide-slate-200">
+                        <div class="mt-3 space-y-2">
                             @foreach ($auto['periods'] as $period)
-                                <div class="grid grid-cols-1 gap-2 py-3 text-sm sm:grid-cols-5">
-                                    <div><span class="text-slate-500">Тип</span><div class="font-medium">{{ $period['type_label'] }}</div></div>
-                                    <div><span class="text-slate-500">Название</span><div class="font-medium">{{ $period['name'] ?: '—' }}</div></div>
-                                    <div><span class="text-slate-500">Статус</span><div class="font-medium">{{ $period['status_label'] }}</div></div>
-                                    <div><span class="text-slate-500">Период</span><div class="font-medium">{{ $period['started_at'] ?: '—' }} — {{ $period['ended_at'] ?: 'н.в.' }}</div></div>
-                                    <div><span class="text-slate-500">Принял</span><div class="font-medium">{{ $period['accepted_by']['name'] ?? '—' }}</div></div>
-                                    @if (!empty($period['acceptance_note']))
-                                        <div class="sm:col-span-5"><span class="text-slate-500">Примечание</span><div class="font-medium">{{ $period['acceptance_note'] }}</div></div>
-                                    @endif
+                                <div class="rounded-xl border border-slate-200 p-3 text-sm">
+                                    <dl class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div><dt class="text-slate-500">Тип</dt><dd class="font-medium">{{ $period['type_label'] }}</dd></div>
+                                        <div><dt class="text-slate-500">Название</dt><dd class="font-medium">{{ $period['name'] ?: '—' }}</dd></div>
+                                        <div><dt class="text-slate-500">Статус</dt><dd class="font-medium">{{ $period['status_label'] }}</dd></div>
+                                        <div><dt class="text-slate-500">Принял</dt><dd class="font-medium">{{ $period['accepted_by']['name'] ?? '—' }}</dd></div>
+                                        <div class="sm:col-span-2"><dt class="text-slate-500">Период</dt><dd class="font-medium">{{ $period['started_at'] ?: '—' }} — {{ $period['ended_at'] ?: 'н.в.' }}</dd></div>
+                                        @if (!empty($period['acceptance_note']))
+                                            <div class="sm:col-span-2"><dt class="text-slate-500">Примечание</dt><dd class="font-medium">{{ $period['acceptance_note'] }}</dd></div>
+                                        @endif
+                                    </dl>
                                 </div>
                             @endforeach
                         </div>
                     @else
                         <p class="mt-2 text-sm text-slate-500">История отсутствует</p>
                     @endif
-                </div>
+                </details>
             </section>
         </div>
 
