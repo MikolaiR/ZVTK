@@ -9,7 +9,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight">Список автомобилей</h1>
-                <p class="mt-1 text-sm text-slate-500">Таблица с актуальными статусами и быстрым переходом в карточку.</p>
+                <p class="mt-1 text-sm text-slate-500">Краткий список с актуальным статусом, локацией и переходом в карточку.</p>
             </div>
             @can('create_auto')
                 <a href="{{ route('autos.create') }}" class="client-btn client-btn-primary">Добавить автомобиль</a>
@@ -44,7 +44,7 @@
                     <thead class="bg-slate-50 text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Фото</th>
-                        <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Название</th>
+                        <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Автомобиль</th>
                         <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Статус</th>
                     </tr>
                     </thead>
@@ -64,11 +64,17 @@
                                 <a href="{{ route('autos.show', $auto['id']) }}" class="font-medium text-slate-800 hover:text-(--client-primary) hover:underline">
                                     {{ $auto['title'] }}
                                 </a>
+                                <div class="mt-1 text-xs text-slate-500">
+                                    {{ $auto['year'] ?? '—' }} • {{ $auto['color_name'] ?? 'Цвет не указан' }}
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center rounded px-2 py-0.5 text-xs text-white {{ $statusClasses[(int) $auto['status']] ?? 'bg-slate-800' }}">
                                     {{ $auto['status_label'] }}
                                 </span>
+                                @if (($auto['status_detailed_label'] ?? null) && $auto['status_detailed_label'] !== $auto['status_label'])
+                                    <div class="mt-1 text-xs text-slate-600">{{ $auto['status_detailed_label'] }}</div>
+                                @endif
                             </td>
                         </tr>
                     @empty

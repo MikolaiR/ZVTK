@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Statuses;
 use App\Models\Auto;
 use App\Models\AutoLocationPeriod;
+use App\Models\Color;
 use App\Models\Parking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,6 +58,46 @@ class ClientBladePagesTest extends TestCase
         $response->assertViewIs('client.autos.index');
         $response->assertSee('Auto Keep');
         $response->assertDontSee('Auto Hide');
+    }
+
+    public function test_autos_index_displays_year_color_and_detailed_status_with_current_location(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+
+        $color = Color::query()->create([
+            'name' => 'Белый',
+            'name_ru' => 'Белый',
+            'hex_code' => '#FFFFFF',
+        ]);
+
+        $auto = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Parking Car',
+            'vin' => 'VIN-PARKING-INDEX-300',
+            'status' => Statuses::Parking,
+            'year' => '2021-01-01',
+            'color_id' => $color->id,
+        ]));
+
+        $parking = Parking::withoutEvents(fn () => Parking::query()->create([
+            'name' => 'ЗВТК мост',
+            'address' => 'Мост 1',
+        ]));
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $auto->id,
+            'location_type' => Parking::class,
+            'location_id' => $parking->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/autos');
+
+        $response->assertOk();
+        $response->assertViewIs('client.autos.index');
+        $response->assertSee('Parking Car');
+        $response->assertSee('2021 • Белый');
+        $response->assertSee('На стоянке ЗВТК мост');
     }
 
     public function test_autos_create_requires_create_auto_permission(): void

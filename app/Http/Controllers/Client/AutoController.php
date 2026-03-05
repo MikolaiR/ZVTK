@@ -35,7 +35,11 @@ class AutoController extends Controller
         ];
 
         $query = Auto::query()
-            ->select(['id', 'title', 'vin', 'status'])
+            ->select(['id', 'title', 'vin', 'status', 'year', 'color_id'])
+            ->with([
+                'color:id,name_ru as name',
+                'currentLocation.location',
+            ])
             ->latest();
 
         AutoFilters::apply($query, $filters);
@@ -46,12 +50,24 @@ class AutoController extends Controller
             'autos' => $autos->through(function (Auto $a) {
                 $preview = $a->getFirstMedia('photos');
                 $previewUrl = $preview ? MediaUrl::url($preview, 'thumb') : null;
+                $statusLabel = Statuses::from($a->status->value)->lable();
+                $locationName = $a->currentLocation?->location?->name
+                    ?? $a->currentLocation?->location?->title;
+
+                $statusDetailedLabel = $locationName
+                    ? sprintf('%s %s', $statusLabel, $locationName)
+                    : $statusLabel;
+
+                $year = $a->year ? date('Y', strtotime((string) $a->year)) : null;
 
                 return [
                     'id' => $a->id,
                     'title' => $a->title,
                     'status' => $a->status->value,
-                    'status_label' => Statuses::from($a->status->value)->lable(),
+                    'status_label' => $statusLabel,
+                    'status_detailed_label' => $statusDetailedLabel,
+                    'year' => $year,
+                    'color_name' => $a->color?->name,
                     'preview_url' => $previewUrl,
                 ];
             }),
