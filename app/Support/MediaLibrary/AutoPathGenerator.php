@@ -52,9 +52,11 @@ class AutoPathGenerator implements PathGenerator
 
     private function base(Media $media): string
     {
-        // Store inside autos/{auto_id}/
+        // Store inside autos/{auto_id}/{media_id}/ to avoid file collisions
+        // while keeping original file names readable for managers.
         $autoId = (int) $media->model_id;
-        $relative = "autos/{$autoId}/";
+        $mediaId = (int) $media->id;
+        $relative = "autos/{$autoId}/{$mediaId}/";
         try {
             $absolute = Storage::disk($media->disk)->path($relative);
             if (!is_dir($absolute)) {
