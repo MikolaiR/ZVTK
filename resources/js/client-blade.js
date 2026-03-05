@@ -96,9 +96,11 @@ window.createUnifiedUploadState = function createUnifiedUploadState() {
 
       this.syncInputs();
 
-      const form = event.target;
-      const method = (form.method || 'POST').toUpperCase();
-      const action = form.action;
+      const form = event.currentTarget;
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const method = (form.getAttribute('method') || 'POST').toUpperCase();
+      const action = form.getAttribute('action') || window.location.href;
       const payload = new FormData(form);
 
       this.uploading = true;
