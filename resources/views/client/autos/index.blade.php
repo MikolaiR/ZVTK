@@ -20,7 +20,7 @@
             <input type="hidden" name="direction" value="{{ $sort['direction'] ?? 'asc' }}" />
             <div>
                 <label for="vin" class="mb-1 block text-sm text-slate-600">VIN</label>
-                <input id="vin" name="vin" value="{{ $filters['vin'] ?? '' }}" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                <input id="vin" name="vin" value="{{ $filters['vin'] ?? '' }}" x-on:input.debounce.500ms="$el.form.submit()" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
             </div>
             <div>
                 <label for="status" class="mb-1 block text-sm text-slate-600">Статус</label>
