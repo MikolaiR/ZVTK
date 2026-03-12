@@ -16,14 +16,15 @@
             @endcan
         </div>
 
-        {{-- <form method="GET" action="{{ route('autos.index') }}" class="client-card grid gap-3 p-4 sm:grid-cols-3">
+        <form method="GET" action="{{ route('autos.index') }}" class="client-card grid gap-3 p-4 sm:grid-cols-4" x-data="{ status: '{{ (string) ($filters['status'] ?? '') }}' }">
+            <input type="hidden" name="direction" value="{{ $sort['direction'] ?? 'asc' }}" />
             <div>
                 <label for="vin" class="mb-1 block text-sm text-slate-600">VIN</label>
                 <input id="vin" name="vin" value="{{ $filters['vin'] ?? '' }}" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
             </div>
             <div>
                 <label for="status" class="mb-1 block text-sm text-slate-600">Статус</label>
-                <select id="status" name="status" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+                <select id="status" name="status" x-model="status" x-on:change="if ($event.target.value !== '4') { document.getElementById('parking_id').value = ''; } $el.form.submit()" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Все</option>
                     <option value="1" @selected(($filters['status'] ?? null) == '1')>Доставка</option>
                     <option value="2" @selected(($filters['status'] ?? null) == '2')>Таможня</option>
@@ -32,11 +33,20 @@
                     <option value="5" @selected(($filters['status'] ?? null) == '5')>Передана владельцу</option>
                 </select>
             </div>
+            <div x-cloak x-show="status === '4'">
+                <label for="parking_id" class="mb-1 block text-sm text-slate-600">Стоянка</label>
+                <select id="parking_id" name="parking_id" x-on:change="$el.form.submit()" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Все стоянки</option>
+                    @foreach ($parkings as $parking)
+                        <option value="{{ $parking->id }}" @selected(($filters['parking_id'] ?? null) == (string) $parking->id)>{{ $parking->name }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex items-end gap-2">
                 <button type="submit" class="client-btn client-btn-primary">Применить</button>
                 <a href="{{ route('autos.index') }}" class="client-btn client-btn-outline">Сброс</a>
             </div>
-        </form> --}}
+        </form>
 
         <div class="client-card overflow-hidden">
             <div class="overflow-x-auto">
@@ -45,12 +55,18 @@
                     <tr>
                         <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Фото</th>
                         <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Автомобиль</th>
+                        <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">
+                            <a href="{{ route('autos.index', array_merge(request()->query(), ['direction' => ($sort['direction'] ?? 'asc') === 'asc' ? 'desc' : 'asc'])) }}" class="inline-flex items-center gap-1 hover:text-slate-700">
+                                <span>Дата отправки</span>
+                                <span class="text-xs">{{ ($sort['direction'] ?? 'asc') === 'asc' ? '↑' : '↓' }}</span>
+                            </a>
+                        </th>
                         <th class="px-4 py-3 text-left font-medium uppercase tracking-wider">Статус</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                     @forelse ($autos as $auto)
-                        <tr class="hover:bg-slate-50/80">
+                        <tr data-parking-highlight="{{ $auto['parking_highlight'] ?? 'none' }}" class="{{ ($auto['parking_highlight'] ?? null) === 'warning' ? 'bg-amber-50 hover:bg-amber-100/80' : (($auto['parking_highlight'] ?? null) === 'danger' ? 'bg-red-100 hover:bg-red-200/80' : 'hover:bg-slate-50/80') }}">
                             <td class="px-4 py-3">
                                 <div class="h-12 w-20 overflow-hidden rounded border border-slate-200">
                                     @if ($auto['preview_url'])
@@ -68,6 +84,9 @@
                                     {{ $auto['year'] ?? '—' }} • {{ $auto['color_name'] ?? 'Цвет не указан' }}
                                 </div>
                             </td>
+                            <td class="px-4 py-3 text-slate-600">
+                                {{ $auto['departure_date'] ?? '—' }}
+                            </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center rounded px-2 py-0.5 text-xs text-white {{ $statusClasses[(int) $auto['status']] ?? 'bg-slate-800' }}">
                                     {{ $auto['status_label'] }}
@@ -79,7 +98,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-4 py-8 text-center text-slate-500">Нет результатов</td>
+                            <td colspan="4" class="px-4 py-8 text-center text-slate-500">Нет результатов</td>
                         </tr>
                     @endforelse
                     </tbody>

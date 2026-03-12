@@ -20,6 +20,7 @@ use App\Services\Autos\AutoActionsResolver;
 use App\Filters\Autos\AutoFilters;
 use App\Enums\Statuses;
 use App\Support\MediaLibrary\MediaUrl;
+use Illuminate\Support\Carbon;
 
 class AutoController extends Controller
 {
@@ -29,22 +30,28 @@ class AutoController extends Controller
 
     public function index(Request $request): Response|View
     {
+        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+
         $filters = [
             'vin' => (string) $request->get('vin', ''),
             'status' => $request->get('status'),
+            'parking_id' => $request->get('parking_id'),
         ];
 
         $query = Auto::query()
-            ->select(['id', 'title', 'vin', 'status', 'year', 'color_id'])
+            ->select(['id', 'title', 'vin', 'status', 'year', 'color_id', 'departure_date'])
             ->with([
                 'color:id,name_ru as name',
                 'currentLocation.location',
             ])
-            ->latest();
+            ->orderByRaw('departure_date IS NULL')
+            ->orderBy('departure_date', $direction)
+            ->orderBy('id', $direction);
 
         AutoFilters::apply($query, $filters);
 
         $autos = $query->paginate(20)->withQueryString();
+        $parkings = Parking::query()->select('id', 'name')->orderBy('name')->get();
 
         $viewData = [
             'autos' => $autos->through(function (Auto $a) {
@@ -53,12 +60,23 @@ class AutoController extends Controller
                 $statusLabel = Statuses::from($a->status->value)->lable();
                 $locationName = $a->currentLocation?->location?->name
                     ?? $a->currentLocation?->location?->title;
+                $parkingStartedAt = $a->currentLocation?->started_at;
+                $parkingHighlight = null;
+
+                if ($a->status === Statuses::Parking && $parkingStartedAt instanceof Carbon) {
+                    if ($parkingStartedAt->copy()->addMonthsNoOverflow(5)->lte(now())) {
+                        $parkingHighlight = 'danger';
+                    } elseif ($parkingStartedAt->copy()->addMonthsNoOverflow(4)->lte(now())) {
+                        $parkingHighlight = 'warning';
+                    }
+                }
 
                 $statusDetailedLabel = $locationName
                     ? sprintf('%s %s', $statusLabel, $locationName)
                     : $statusLabel;
 
                 $year = $a->year ? date('Y', strtotime((string) $a->year)) : null;
+                $departureDate = $a->departure_date ? date('Y-m-d', strtotime((string) $a->departure_date)) : null;
 
                 return [
                     'id' => $a->id,
@@ -68,13 +86,22 @@ class AutoController extends Controller
                     'status_detailed_label' => $statusDetailedLabel,
                     'year' => $year,
                     'color_name' => $a->color?->name,
+                    'departure_date' => $departureDate,
+                    'parking_id' => $a->currentLocation?->location_id,
+                    'parking_name' => $locationName,
+                    'parking_highlight' => $parkingHighlight,
                     'preview_url' => $previewUrl,
                 ];
             }),
             'filters' => [
                 'vin' => $filters['vin'],
                 'status' => $filters['status'],
+                'parking_id' => $filters['parking_id'],
             ],
+            'sort' => [
+                'direction' => $direction,
+            ],
+            'parkings' => $parkings,
         ];
 
         if (config('features.client_blade_enabled')) {

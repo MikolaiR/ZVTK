@@ -11,6 +11,7 @@ class AutoFilters
         $map = [
             'vin' => new VinFilter(),
             'status' => new StatusFilter(),
+            'parking_id' => new ParkingFilter(),
         ];
 
         foreach ($map as $key => $filter) {

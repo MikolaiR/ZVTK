@@ -9,6 +9,7 @@ use App\Models\Color;
 use App\Models\Parking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -98,6 +99,168 @@ class ClientBladePagesTest extends TestCase
         $response->assertSee('Parking Car');
         $response->assertSee('2021 • Белый');
         $response->assertSee('На стоянке ЗВТК мост');
+    }
+
+    public function test_autos_index_sorts_by_departure_date_ascending_by_default(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_delivery']);
+
+        Auto::withoutEvents(function () {
+            Auto::query()->create([
+                'title' => 'Older Departure',
+                'vin' => 'VIN-OLD-001',
+                'status' => Statuses::Delivery,
+                'departure_date' => '2025-01-10',
+            ]);
+
+            Auto::query()->create([
+                'title' => 'Newer Departure',
+                'vin' => 'VIN-NEW-002',
+                'status' => Statuses::Delivery,
+                'departure_date' => '2025-02-10',
+            ]);
+        });
+
+        $response = $this->actingAs($user)->get('/autos');
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Older Departure', 'Newer Departure'], false);
+        $response->assertSee('2025-01-10');
+        $response->assertSee('2025-02-10');
+        $response->assertSee('>↑<', false);
+    }
+
+    public function test_autos_index_can_sort_by_departure_date_descending(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_delivery']);
+
+        Auto::withoutEvents(function () {
+            Auto::query()->create([
+                'title' => 'Older Departure',
+                'vin' => 'VIN-OLD-101',
+                'status' => Statuses::Delivery,
+                'departure_date' => '2025-01-10',
+            ]);
+
+            Auto::query()->create([
+                'title' => 'Newer Departure',
+                'vin' => 'VIN-NEW-202',
+                'status' => Statuses::Delivery,
+                'departure_date' => '2025-02-10',
+            ]);
+        });
+
+        $response = $this->actingAs($user)->get('/autos?direction=desc');
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Newer Departure', 'Older Departure'], false);
+        $response->assertSee('>↓<', false);
+    }
+
+    public function test_autos_index_filters_parking_status_by_current_parking_only(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+
+        $parkingOne = Parking::withoutEvents(fn () => Parking::query()->create([
+            'name' => 'Стоянка 1',
+            'address' => 'Адрес 1',
+        ]));
+
+        $parkingTwo = Parking::withoutEvents(fn () => Parking::query()->create([
+            'name' => 'Стоянка 2',
+            'address' => 'Адрес 2',
+        ]));
+
+        $autoAtParkingOne = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Parking One Car',
+            'vin' => 'VIN-PARK-ONE',
+            'status' => Statuses::Parking,
+        ]));
+
+        $autoMovedAway = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Moved Away Car',
+            'vin' => 'VIN-MOVED-AWAY',
+            'status' => Statuses::Parking,
+        ]));
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $autoAtParkingOne->id,
+            'location_type' => Parking::class,
+            'location_id' => $parkingOne->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subMonth(),
+        ]);
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $autoMovedAway->id,
+            'location_type' => Parking::class,
+            'location_id' => $parkingOne->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subMonths(2),
+            'ended_at' => now()->subMonth(),
+        ]);
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $autoMovedAway->id,
+            'location_type' => Parking::class,
+            'location_id' => $parkingTwo->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subMonth(),
+        ]);
+
+        $response = $this->actingAs($user)->get("/autos?status=4&parking_id={$parkingOne->id}");
+
+        $response->assertOk();
+        $response->assertSee('Parking One Car');
+        $response->assertDontSee('Moved Away Car');
+    }
+
+    public function test_autos_index_marks_parking_rows_with_warning_and_danger_highlights(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 3, 12, 12, 0, 0));
+
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+
+        $parking = Parking::withoutEvents(fn () => Parking::query()->create([
+            'name' => 'Длительная стоянка',
+            'address' => 'Адрес 3',
+        ]));
+
+        $warningAuto = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Warning Parking Car',
+            'vin' => 'VIN-WARNING-001',
+            'status' => Statuses::Parking,
+        ]));
+
+        $dangerAuto = Auto::withoutEvents(fn () => Auto::query()->create([
+            'title' => 'Danger Parking Car',
+            'vin' => 'VIN-DANGER-002',
+            'status' => Statuses::Parking,
+        ]));
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $warningAuto->id,
+            'location_type' => Parking::class,
+            'location_id' => $parking->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subMonthsNoOverflow(4),
+        ]);
+
+        AutoLocationPeriod::query()->create([
+            'auto_id' => $dangerAuto->id,
+            'location_type' => Parking::class,
+            'location_id' => $parking->id,
+            'status' => Statuses::Parking->value,
+            'started_at' => now()->subMonthsNoOverflow(5),
+        ]);
+
+        $response = $this->actingAs($user)->get('/autos?status=4');
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['data-parking-highlight="warning"', 'Warning Parking Car'], false);
+        $response->assertSeeInOrder(['data-parking-highlight="danger"', 'Danger Parking Car'], false);
+
+        Carbon::setTestNow();
     }
 
     public function test_autos_create_requires_create_auto_permission(): void
