@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -33,7 +34,11 @@ class AutoInventoryExportService
         'дата перемещения',
         'Перемещено в',
         'Сумма',
+        'Фото',
     ];
+
+    private const PHOTO_COL = 'I';
+    private const PHOTO_HEIGHT = 80;
 
     public function export(array $filters): StreamedResponse
     {
@@ -71,7 +76,8 @@ class AutoInventoryExportService
     private function buildQuery(?int $parkingId, string $direction): Builder
     {
         $query = Auto::query()
-            ->select(['id', 'title', 'vin', 'status', 'year']);
+            ->select(['id', 'title', 'vin', 'status', 'year'])
+            ->with('media');
         if (!$parkingId) {
             $query->where('status', Statuses::Parking->value);
         }
@@ -100,6 +106,8 @@ class AutoInventoryExportService
     {
         $parkingPeriod = $this->resolveParkingPeriod($auto, $parking);
 
+        $photoPath = $this->resolvePhotoPath($auto);
+
         if ($parkingPeriod === null) {
             return [
                 'title' => $auto->title,
@@ -110,6 +118,7 @@ class AutoInventoryExportService
                 'movement_date' => '',
                 'destination' => '',
                 'cost' => '',
+                'photo_path' => $photoPath,
             ];
         }
 
@@ -123,6 +132,7 @@ class AutoInventoryExportService
                 'movement_date' => '',
                 'destination' => '',
                 'cost' => $this->costService->calculateForPeriod($parkingPeriod),
+                'photo_path' => $photoPath,
             ];
         }
 
@@ -137,7 +147,20 @@ class AutoInventoryExportService
             'movement_date' => $parkingPeriod->ended_at->format('d.m.Y'),
             'destination' => $this->locationName($nextPeriod),
             'cost' => $this->costService->calculateForPeriod($parkingPeriod),
+            'photo_path' => $photoPath,
         ];
+    }
+
+    private function resolvePhotoPath(Auto $auto): ?string
+    {
+        $media = $auto->getFirstMedia('photos');
+        if ($media === null) {
+            return null;
+        }
+
+        $path = $media->getPath();
+
+        return (is_file($path) && is_readable($path)) ? $path : null;
     }
 
     private function resolveParkingPeriod(Auto $auto, ?Parking $parking): ?AutoLocationPeriod
@@ -212,14 +235,14 @@ class AutoInventoryExportService
 
     private function writeReportHeader(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, ?Parking $parking): int
     {
-        $sheet->mergeCells('A1:H1');
+        $sheet->mergeCells('A1:I1');
         $sheet->setCellValue('A1', self::REPORT_TITLE);
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $row = 2;
         if ($parking) {
-            $sheet->mergeCells('A2:H2');
+            $sheet->mergeCells('A2:I2');
             $sheet->setCellValue('A2', 'Местонахождение стоянки: ' . $parking->address);
             $sheet->getStyle('A2')->getFont()->setBold(true);
             $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -258,7 +281,25 @@ class AutoInventoryExportService
                     ->getNumberFormat()
                     ->setFormatCode('#,##0');
             }
+            if (!empty($row['photo_path'])) {
+                $this->insertPhoto($sheet, $row['photo_path'], self::PHOTO_COL . $currentRow);
+                $sheet->getRowDimension($currentRow)->setRowHeight(self::PHOTO_HEIGHT);
+            }
         }
+    }
+
+    private function insertPhoto(
+        \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet,
+        string $path,
+        string $cell
+    ): void {
+        $drawing = new Drawing();
+        $drawing->setPath($path);
+        $drawing->setCoordinates($cell);
+        $drawing->setHeight(self::PHOTO_HEIGHT);
+        $drawing->setOffsetX(2);
+        $drawing->setOffsetY(2);
+        $drawing->setWorksheet($sheet);
     }
 
     private function applyStyles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $headerRow, int $lastDataRow): void
@@ -269,7 +310,11 @@ class AutoInventoryExportService
 
         foreach (range(1, count(self::HEADERS)) as $columnIndex) {
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+            if ($column === self::PHOTO_COL) {
+                $sheet->getColumnDimension($column)->setWidth(14);
+            } else {
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+            }
         }
     }
 }
