@@ -6,8 +6,10 @@ use App\Enums\Statuses;
 use App\Models\Auto;
 use App\Models\AutoLocationPeriod;
 use App\Models\Parking;
+use App\Models\Price;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -87,6 +89,73 @@ class AutoInventoryExportTest extends TestCase
         $this->assertSame('Отсутствует', $worksheet->getCell('D5')->getValue());
         $this->assertSame(now()->subMonth()->format('d.m.Y'), $worksheet->getCell('E5')->getValue());
         $this->assertSame('Стоянка 2', $worksheet->getCell('F5')->getValue());
+    }
+
+    public function test_export_includes_cost_column_in_header(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+        $parking = $this->createParking('Стоянка', 'Адрес');
+
+        $response = $this->actingAs($user)->get("/autos/export?status=4&parking_id={$parking->id}");
+        $response->assertOk();
+
+        $worksheet = $this->readWorksheet($response->streamedContent());
+        $this->assertSame('Сумма', $worksheet->getCell('G4')->getValue());
+    }
+
+    public function test_export_calculates_cost_for_active_period(): void
+    {
+        Carbon::setTestNow(Carbon::create(2025, 6, 1));
+
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+        $parking = $this->createParking('Стоянка', 'Адрес');
+
+        Price::query()->create([
+            'parking_id' => $parking->id,
+            'name' => 'Тариф',
+            'price' => 100,
+            'date_start' => '2025-01-01',
+            'date_end' => null,
+        ]);
+
+        $auto = $this->createAuto('Cost Car', 'VIN-COST-001', Statuses::Parking);
+        $this->createParkingPeriod($auto, $parking, Carbon::create(2025, 5, 30));
+
+        $response = $this->actingAs($user)->get("/autos/export?status=4&parking_id={$parking->id}");
+        $response->assertOk();
+
+        $worksheet = $this->readWorksheet($response->streamedContent());
+        $this->assertSame(300, $worksheet->getCell('G5')->getValue());
+
+        Carbon::setTestNow();
+    }
+
+    public function test_export_calculates_cost_for_closed_period(): void
+    {
+        $user = $this->createUserWithPermissions(['view_status_parking']);
+        $parking = $this->createParking('Стоянка', 'Адрес');
+
+        Price::query()->create([
+            'parking_id' => $parking->id,
+            'name' => 'Тариф',
+            'price' => 50,
+            'date_start' => '2025-01-01',
+            'date_end' => null,
+        ]);
+
+        $auto = $this->createAuto('Closed Cost Car', 'VIN-COST-002', Statuses::Parking);
+        $this->createParkingPeriod(
+            $auto,
+            $parking,
+            Carbon::create(2025, 3, 1),
+            Carbon::create(2025, 3, 5)
+        );
+
+        $response = $this->actingAs($user)->get("/autos/export?status=4&parking_id={$parking->id}");
+        $response->assertOk();
+
+        $worksheet = $this->readWorksheet($response->streamedContent());
+        $this->assertSame(250, $worksheet->getCell('G5')->getValue());
     }
 
     public function test_export_requires_parking_status(): void
