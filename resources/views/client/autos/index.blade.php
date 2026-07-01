@@ -45,6 +45,9 @@
             <div class="flex items-end gap-2">
                 <button type="submit" class="client-btn client-btn-primary">Применить</button>
                 <a href="{{ route('autos.index') }}" class="client-btn client-btn-outline">Сброс</a>
+                @if (($filters['status'] ?? null) === '4')
+                    <a href="{{ route('autos.export', request()->query()) }}" class="client-btn client-btn-outline">Выгрузить в Excel</a>
+                @endif
             </div>
         </form>
 

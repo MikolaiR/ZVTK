@@ -15,6 +15,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Resources\AutoResource;
+use App\Services\Autos\AutoInventoryExportService;
 use App\Services\Autos\CreateAutoService;
 use App\Services\Autos\AutoActionsResolver;
 use App\Filters\Autos\AutoFilters;
@@ -24,8 +25,10 @@ use Illuminate\Support\Carbon;
 
 class AutoController extends Controller
 {
-    public function __construct(private readonly CreateAutoService $creator)
-    {
+    public function __construct(
+        private readonly CreateAutoService $creator,
+        private readonly AutoInventoryExportService $inventoryExporter,
+    ) {
     }
 
     public function index(Request $request): Response|View
@@ -109,6 +112,24 @@ class AutoController extends Controller
         }
 
         return Inertia::render('Autos/Index', $viewData);
+    }
+
+    public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+
+        $filters = [
+            'vin' => (string) $request->get('vin', ''),
+            'status' => $request->get('status'),
+            'parking_id' => $request->get('parking_id'),
+            'direction' => $direction,
+        ];
+
+        try {
+            return $this->inventoryExporter->export($filters);
+        } catch (\InvalidArgumentException $e) {
+            abort(400, $e->getMessage());
+        }
     }
 
     public function show(Request $request, Auto $auto): Response|View

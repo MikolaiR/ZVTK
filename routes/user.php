@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
     })->name('instructions.index');
 
     Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
+    Route::get('/autos/export', [AutoController::class, 'export'])->name('autos.export');
 
     // Create Auto (manager/admin)
     Route::middleware('permission:create_auto')->group(function () {
