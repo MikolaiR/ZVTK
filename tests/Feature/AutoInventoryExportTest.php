@@ -64,7 +64,7 @@ class AutoInventoryExportTest extends TestCase
         $this->assertSame('Present Car', $worksheet->getCell('A5')->getValue());
         $this->assertSame('VIN-PRESENT-001', $worksheet->getCell('B5')->getValue());
         $this->assertSame(2023, $worksheet->getCell('C5')->getValue());
-        $this->assertSame('В наличии на стоянке ЗВТК мост', $worksheet->getCell('D5')->getValue());
+        $this->assertSame('В наличии на стоянке ЗВТК мост', $worksheet->getCell('E5')->getValue());
     }
 
     public function test_export_marks_moved_away_auto_as_absent(): void
@@ -86,9 +86,9 @@ class AutoInventoryExportTest extends TestCase
         $worksheet = $this->readWorksheet($response->streamedContent());
 
         $this->assertSame('Moved Away Car', $worksheet->getCell('A5')->getValue());
-        $this->assertSame('Отсутствует', $worksheet->getCell('D5')->getValue());
-        $this->assertSame(now()->subMonth()->format('d.m.Y'), $worksheet->getCell('E5')->getValue());
-        $this->assertSame('Стоянка 2', $worksheet->getCell('F5')->getValue());
+        $this->assertSame('Отсутствует', $worksheet->getCell('E5')->getValue());
+        $this->assertSame(now()->subMonth()->format('d.m.Y'), $worksheet->getCell('F5')->getValue());
+        $this->assertSame('Стоянка 2', $worksheet->getCell('G5')->getValue());
     }
 
     public function test_export_includes_cost_column_in_header(): void
@@ -100,7 +100,8 @@ class AutoInventoryExportTest extends TestCase
         $response->assertOk();
 
         $worksheet = $this->readWorksheet($response->streamedContent());
-        $this->assertSame('Сумма', $worksheet->getCell('G4')->getValue());
+        $this->assertSame('Дата прибытия', $worksheet->getCell('D4')->getValue());
+        $this->assertSame('Сумма', $worksheet->getCell('H4')->getValue());
     }
 
     public function test_export_calculates_cost_for_active_period(): void
@@ -125,7 +126,7 @@ class AutoInventoryExportTest extends TestCase
         $response->assertOk();
 
         $worksheet = $this->readWorksheet($response->streamedContent());
-        $this->assertSame(300, $worksheet->getCell('G5')->getValue());
+        $this->assertSame(300, $worksheet->getCell('H5')->getValue());
 
         Carbon::setTestNow();
     }
@@ -155,7 +156,7 @@ class AutoInventoryExportTest extends TestCase
         $response->assertOk();
 
         $worksheet = $this->readWorksheet($response->streamedContent());
-        $this->assertSame(250, $worksheet->getCell('G5')->getValue());
+        $this->assertSame(250, $worksheet->getCell('H5')->getValue());
     }
 
     public function test_export_requires_parking_status(): void

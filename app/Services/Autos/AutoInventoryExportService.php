@@ -28,6 +28,7 @@ class AutoInventoryExportService
         'Объект инвентаризации',
         'VIN',
         'Г.В.',
+        'Дата прибытия',
         'Наличие',
         'дата перемещения',
         'Перемещено в',
@@ -105,6 +106,7 @@ class AutoInventoryExportService
                 'vin' => $auto->vin,
                 'year' => $this->formatYear($auto->year),
                 'presence' => 'Нет данных по стоянке',
+                'arrival_date' => '',
                 'movement_date' => '',
                 'destination' => '',
                 'cost' => '',
@@ -117,6 +119,7 @@ class AutoInventoryExportService
                 'vin' => $auto->vin,
                 'year' => $this->formatYear($auto->year),
                 'presence' => 'В наличии на стоянке ' . ($parkingPeriod->location?->name ?? ''),
+                'arrival_date' => $parkingPeriod->started_at->format('d.m.Y'),
                 'movement_date' => '',
                 'destination' => '',
                 'cost' => $this->costService->calculateForPeriod($parkingPeriod),
@@ -130,6 +133,7 @@ class AutoInventoryExportService
             'vin' => $auto->vin,
             'year' => $this->formatYear($auto->year),
             'presence' => 'Отсутствует',
+            'arrival_date' => $parkingPeriod->started_at->format('d.m.Y'),
             'movement_date' => $parkingPeriod->ended_at->format('d.m.Y'),
             'destination' => $this->locationName($nextPeriod),
             'cost' => $this->costService->calculateForPeriod($parkingPeriod),
@@ -208,14 +212,14 @@ class AutoInventoryExportService
 
     private function writeReportHeader(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, ?Parking $parking): int
     {
-        $sheet->mergeCells('A1:G1');
+        $sheet->mergeCells('A1:H1');
         $sheet->setCellValue('A1', self::REPORT_TITLE);
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $row = 2;
         if ($parking) {
-            $sheet->mergeCells('A2:G2');
+            $sheet->mergeCells('A2:H2');
             $sheet->setCellValue('A2', 'Местонахождение стоянки: ' . $parking->address);
             $sheet->getStyle('A2')->getFont()->setBold(true);
             $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -244,12 +248,13 @@ class AutoInventoryExportService
             $sheet->setCellValue('A' . $currentRow, $row['title']);
             $sheet->setCellValue('B' . $currentRow, $row['vin']);
             $sheet->setCellValue('C' . $currentRow, $row['year']);
-            $sheet->setCellValue('D' . $currentRow, $row['presence']);
-            $sheet->setCellValue('E' . $currentRow, $row['movement_date']);
-            $sheet->setCellValue('F' . $currentRow, $row['destination']);
+            $sheet->setCellValue('D' . $currentRow, $row['arrival_date']);
+            $sheet->setCellValue('E' . $currentRow, $row['presence']);
+            $sheet->setCellValue('F' . $currentRow, $row['movement_date']);
+            $sheet->setCellValue('G' . $currentRow, $row['destination']);
             if ($row['cost'] !== '') {
-                $sheet->setCellValue('G' . $currentRow, $row['cost']);
-                $sheet->getStyle('G' . $currentRow)
+                $sheet->setCellValue('H' . $currentRow, $row['cost']);
+                $sheet->getStyle('H' . $currentRow)
                     ->getNumberFormat()
                     ->setFormatCode('#,##0');
             }
