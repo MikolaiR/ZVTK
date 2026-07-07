@@ -183,9 +183,15 @@
       <!-- Storage cost -->
       <Modal :open="modals.storage" title="Стоимость хранения" size="lg" @close="closeAll">
         <div class="space-y-4">
-          <div class="text-sm text-gray-700">Всего дней: <span class="font-medium">{{ storage.total_days }}</span>, Итого: <span class="font-medium">{{ new Intl.NumberFormat('ru-RU').format(storage.total_cost) }}</span></div>
+          <div class="space-y-1">
+            <div class="text-sm text-gray-700">Всего дней: <span class="font-medium">{{ storage.total_days }}</span>, Итого: <span class="font-medium">{{ formatUsd(storage.total_cost) }} $</span><span v-if="storage.total_cost_byn != null"> ({{ formatByn(storage.total_cost_byn) }} BYN)</span></div>
+            <div class="text-xs text-gray-500">
+              <span v-if="storage.rate?.available">Курс на сегодня: 1 $ = {{ formatRate(storage.rate.value) }} BYN</span>
+              <span v-else>Ошибка получения курса</span>
+            </div>
+          </div>
           <div v-for="p in storage.per_parkings" :key="p.parking.id" class="rounded-md border">
-            <div class="px-3 py-2 border-b font-medium">Стоянка: {{ p.parking.name || ('#' + p.parking.id) }} — дней: {{ p.total_days }}, сумма: {{ new Intl.NumberFormat('ru-RU').format(p.total_cost) }}</div>
+            <div class="px-3 py-2 border-b font-medium">Стоянка: {{ p.parking.name || ('#' + p.parking.id) }} — дней: {{ p.total_days }}, сумма: {{ formatUsd(p.total_cost) }} $<span v-if="p.total_cost_byn != null"> ({{ formatByn(p.total_cost_byn) }} BYN)</span></div>
             <div class="max-h-64 overflow-auto">
               <table class="min-w-full text-sm">
                 <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Дата</th><th class="px-3 py-2 text-left">Цена</th></tr></thead>
@@ -238,6 +244,9 @@ const prev = () => { if (!slides.value.length) return; slideIndex.value = (slide
 const go = (i) => { if (!slides.value.length) return; slideIndex.value = i }
 
 const fmt = (s) => { if (!s) return ''; const d = new Date(s); if (Number.isNaN(+d)) return s; return d.toLocaleString('ru-RU') }
+const formatUsd = (value) => new Intl.NumberFormat('ru-RU').format(Number(value || 0))
+const formatByn = (value) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0))
+const formatRate = (value) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(Number(value || 0))
 
 // Modals state
 const modals = reactive({ storage: false })
@@ -334,7 +343,7 @@ const currentParkingId = computed(() => props.auto.current_location && props.aut
 const availableParkings = computed(() => props.parkings.filter(p => !currentParkingId.value || p.id !== currentParkingId.value))
 
 // Storage cost
-const storage = ref({ total_days: 0, total_cost: 0, per_parkings: [] })
+const storage = ref({ total_days: 0, total_cost: 0, total_cost_byn: null, rate: { value: 0, available: false, date: '' }, per_parkings: [] })
 const loadStorage = async () => {
   const res = await fetch(`/autos/${props.auto.id}/storage-cost`)
   if (res.ok) storage.value = await res.json()

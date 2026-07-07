@@ -6,6 +6,7 @@ use App\Enums\Statuses;
 use App\Models\Auto;
 use App\Models\AutoLocationPeriod;
 use App\Models\Parking;
+use App\Services\CurrencyRateService;
 use App\Services\ParkingCostService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -18,8 +19,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AutoInventoryExportService
 {
+    private array $rate;
+
     public function __construct(
         private readonly ParkingCostService $costService,
+        private readonly CurrencyRateService $currencyService,
     ) {
     }
 
@@ -34,10 +38,11 @@ class AutoInventoryExportService
         'дата перемещения',
         'Перемещено в',
         'Сумма',
+        'Сумма BYN',
         'Фото',
     ];
 
-    private const PHOTO_COL = 'I';
+    private const PHOTO_COL = 'J';
     private const PHOTO_HEIGHT = 80;
 
     public function export(array $filters): StreamedResponse
@@ -51,6 +56,8 @@ class AutoInventoryExportService
         $parkingId = !empty($filters['parking_id']) ? (int) $filters['parking_id'] : null;
         $parking = $parkingId ? Parking::find($parkingId) : null;
         $direction = ($filters['direction'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
+        $this->rate = $this->currencyService->getUsdToBynRate();
 
         $query = $this->buildQuery($parkingId, $direction);
         $this->applyVinFilter($query, (string) ($filters['vin'] ?? ''));
@@ -118,11 +125,14 @@ class AutoInventoryExportService
                 'movement_date' => '',
                 'destination' => '',
                 'cost' => '',
+                'cost_byn' => '',
                 'photo_path' => $photoPath,
             ];
         }
 
         if ($parkingPeriod->ended_at === null) {
+            $cost = $this->costService->calculateForPeriod($parkingPeriod);
+
             return [
                 'title' => $auto->title,
                 'vin' => $auto->vin,
@@ -131,12 +141,14 @@ class AutoInventoryExportService
                 'arrival_date' => $parkingPeriod->started_at->format('d.m.Y'),
                 'movement_date' => '',
                 'destination' => '',
-                'cost' => $this->costService->calculateForPeriod($parkingPeriod),
+                'cost' => $cost,
+                'cost_byn' => $this->formatBynCost($cost),
                 'photo_path' => $photoPath,
             ];
         }
 
         $nextPeriod = $this->resolveNextPeriod($auto, $parkingPeriod);
+        $cost = $this->costService->calculateForPeriod($parkingPeriod);
 
         return [
             'title' => $auto->title,
@@ -146,9 +158,19 @@ class AutoInventoryExportService
             'arrival_date' => $parkingPeriod->started_at->format('d.m.Y'),
             'movement_date' => $parkingPeriod->ended_at->format('d.m.Y'),
             'destination' => $this->locationName($nextPeriod),
-            'cost' => $this->costService->calculateForPeriod($parkingPeriod),
+            'cost' => $cost,
+            'cost_byn' => $this->formatBynCost($cost),
             'photo_path' => $photoPath,
         ];
+    }
+
+    private function formatBynCost(int $cost): float|string
+    {
+        if (! $this->rate['available']) {
+            return '';
+        }
+
+        return round($cost * $this->rate['value'], 2);
     }
 
     private function resolvePhotoPath(Auto $auto): ?string
@@ -235,19 +257,30 @@ class AutoInventoryExportService
 
     private function writeReportHeader(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, ?Parking $parking): int
     {
-        $sheet->mergeCells('A1:I1');
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count(self::HEADERS));
+
+        $sheet->mergeCells("A1:{$lastCol}1");
         $sheet->setCellValue('A1', self::REPORT_TITLE);
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $row = 2;
         if ($parking) {
-            $sheet->mergeCells('A2:I2');
+            $sheet->mergeCells("A2:{$lastCol}2");
             $sheet->setCellValue('A2', 'Местонахождение стоянки: ' . $parking->address);
             $sheet->getStyle('A2')->getFont()->setBold(true);
             $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row = 3;
         }
+
+        $rateText = $this->rate['available']
+            ? 'Курс USD/BYN на ' . now()->format('d.m.Y') . ': ' . number_format($this->rate['value'], 4, ',', ' ') . ' BYN'
+            : 'Ошибка получения курса';
+
+        $sheet->mergeCells("A{$row}:{$lastCol}{$row}");
+        $sheet->setCellValue("A{$row}", $rateText);
+        $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return $row + 1;
     }
@@ -280,6 +313,12 @@ class AutoInventoryExportService
                 $sheet->getStyle('H' . $currentRow)
                     ->getNumberFormat()
                     ->setFormatCode('#,##0');
+            }
+            if ($row['cost_byn'] !== '') {
+                $sheet->setCellValue('I' . $currentRow, $row['cost_byn']);
+                $sheet->getStyle('I' . $currentRow)
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0.00');
             }
             if (!empty($row['photo_path'])) {
                 $this->insertPhoto($sheet, $row['photo_path'], self::PHOTO_COL . $currentRow);

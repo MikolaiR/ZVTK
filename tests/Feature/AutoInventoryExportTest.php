@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Statuses;
 use App\Models\Auto;
 use App\Models\AutoLocationPeriod;
+use App\Models\CurrencyRate;
 use App\Models\Parking;
 use App\Models\Price;
 use App\Models\User;
@@ -102,6 +103,7 @@ class AutoInventoryExportTest extends TestCase
         $worksheet = $this->readWorksheet($response->streamedContent());
         $this->assertSame('Дата прибытия', $worksheet->getCell('D4')->getValue());
         $this->assertSame('Сумма', $worksheet->getCell('H4')->getValue());
+        $this->assertSame('Сумма BYN', $worksheet->getCell('I4')->getValue());
     }
 
     public function test_export_calculates_cost_for_active_period(): void
@@ -119,6 +121,12 @@ class AutoInventoryExportTest extends TestCase
             'date_end' => null,
         ]);
 
+        CurrencyRate::query()->create([
+            'currency_code' => 'USD',
+            'rate' => 3.25,
+            'rate_date' => '2025-06-01',
+        ]);
+
         $auto = $this->createAuto('Cost Car', 'VIN-COST-001', Statuses::Parking);
         $this->createParkingPeriod($auto, $parking, Carbon::create(2025, 5, 30));
 
@@ -127,6 +135,7 @@ class AutoInventoryExportTest extends TestCase
 
         $worksheet = $this->readWorksheet($response->streamedContent());
         $this->assertSame(300, $worksheet->getCell('H5')->getValue());
+        $this->assertSame(975.0, $worksheet->getCell('I5')->getValue());
 
         Carbon::setTestNow();
     }
@@ -144,6 +153,12 @@ class AutoInventoryExportTest extends TestCase
             'date_end' => null,
         ]);
 
+        CurrencyRate::query()->create([
+            'currency_code' => 'USD',
+            'rate' => 3.25,
+            'rate_date' => Carbon::today()->toDateString(),
+        ]);
+
         $auto = $this->createAuto('Closed Cost Car', 'VIN-COST-002', Statuses::Parking);
         $this->createParkingPeriod(
             $auto,
@@ -157,6 +172,7 @@ class AutoInventoryExportTest extends TestCase
 
         $worksheet = $this->readWorksheet($response->streamedContent());
         $this->assertSame(250, $worksheet->getCell('H5')->getValue());
+        $this->assertSame(812.5, $worksheet->getCell('I5')->getValue());
     }
 
     public function test_export_requires_parking_status(): void

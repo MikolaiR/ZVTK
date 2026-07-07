@@ -7,6 +7,7 @@ use App\Http\Requests\Autos\TransitionRequest;
 use App\Models\Auto;
 use App\Services\Autos\ParkingCostCalculator;
 use App\Services\Autos\AutoActionsResolver;
+use App\Services\CurrencyRateService;
 use App\Services\Autos\Transitions\AcceptAtParkingTransition;
 use App\Services\Autos\Transitions\MoveToCustomsFromParkingTransition;
 use App\Services\Autos\Transitions\MoveToCustomsTransition;
@@ -20,6 +21,11 @@ use Illuminate\Http\Request;
 
 class AutoTransitionController extends Controller
 {
+    public function __construct(
+        private readonly CurrencyRateService $currencyService,
+    ) {
+    }
+
     public function store(TransitionRequest $request, Auto $auto): RedirectResponse
     {
         $user = $request->user();
@@ -58,6 +64,21 @@ class AutoTransitionController extends Controller
     {
         $calculator = app(ParkingCostCalculator::class);
         $result = $calculator->calculate($auto);
+
+        $rate = $this->currencyService->getUsdToBynRate();
+        $rateValue = $rate['available'] ? $rate['value'] : null;
+
+        $result['rate'] = $rate;
+        $result['total_cost_byn'] = $rateValue !== null
+            ? round($result['total_cost'] * $rateValue, 2)
+            : null;
+
+        foreach ($result['per_parkings'] as &$parking) {
+            $parking['total_cost_byn'] = $rateValue !== null
+                ? round($parking['total_cost'] * $rateValue, 2)
+                : null;
+        }
+        unset($parking);
 
         return response()->json($result);
     }
