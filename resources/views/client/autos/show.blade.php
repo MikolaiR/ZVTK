@@ -51,7 +51,14 @@
 ]))" x-init="init()" class="space-y-5">
         <div class="flex items-center justify-between gap-3">
             <h1 class="text-2xl font-semibold tracking-tight">{{ $auto['title'] ?: 'Автомобиль' }}</h1>
-            <a href="{{ route('autos.index') }}" class="client-btn client-btn-outline">К списку</a>
+            @php
+                $backUrl = request('back');
+                $listUrl =
+                    $backUrl && str_starts_with(urldecode($backUrl), url(route('autos.index', [], false)))
+                        ? urldecode($backUrl)
+                        : route('autos.index');
+            @endphp
+            <a href="{{ $listUrl }}" class="client-btn client-btn-outline">К списку</a>
         </div>
 
         <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
