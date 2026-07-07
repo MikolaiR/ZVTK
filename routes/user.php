@@ -6,17 +6,10 @@ use App\Http\Controllers\Client\AutoTransitionController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
     Route::get('/', HomeController::class)->name('home');
-    Route::get('/instructions', function () {
-        if (config('features.client_blade_enabled')) {
-            return view('client.instructions');
-        }
-
-        return Inertia::render('Instructions/Index');
-    })->name('instructions.index');
+    Route::view('/instructions', 'client.instructions')->name('instructions.index');
 
     Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
     Route::get('/autos/export', [AutoController::class, 'export'])->name('autos.export');

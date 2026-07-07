@@ -80,7 +80,7 @@ class AutoTransitionController extends Controller
         }
         unset($parking);
 
-        return response()->json($result);
+        return response()->json($result, 200, [], JSON_PRESERVE_ZERO_FRACTION);
     }
 }
 

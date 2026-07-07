@@ -24,10 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        // Inertia middleware for Laravel 11 web stack
         if (method_exists($middleware, 'web')) {
             $middleware->web(append: [
-                \App\Http\Middleware\HandleInertiaRequests::class,
                 AddLinkHeadersForPreloadedAssets::class,
             ]);
         }

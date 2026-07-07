@@ -10,6 +10,7 @@ use App\Http\Requests\Admin\Auto\Periods\StorePeriodRequest;
 use App\Http\Requests\Admin\Auto\Periods\UpdatePeriodRequest;
 use App\Models\Auto;
 use App\Models\AutoBrand;
+use App\Models\AutoModel;
 use App\Models\Color;
 use App\Models\Customer;
 use App\Models\Parking;
@@ -18,15 +19,14 @@ use App\Models\Sender;
 use App\Models\Company;
 use App\Models\Provider;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Support\MediaLibrary\MediaUrl;
 
 class AutoController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $this->authorize('viewAny', Auto::class);
 
@@ -46,7 +46,7 @@ class AutoController extends Controller
 
         $autos = $query->paginate(20)->withQueryString();
 
-        return Inertia::render('Admin/Autos/Index', [
+        return view('admin.autos.index', [
             'filters' => ['search' => $search],
             'autos' => $autos->through(function (Auto $a) {
                 $preview = $a->getFirstMedia('photos');
@@ -63,18 +63,7 @@ class AutoController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        // Reuse client create page props
-        $brands = AutoBrand::query()->select('id', 'name')->orderBy('name')->get();
-        $colors = Color::query()->select('id', 'name', 'name_ru', 'hex_code')->orderBy('name')->get();
-        return Inertia::render('Autos/Create', [
-            'brands' => $brands,
-            'colors' => $colors,
-        ]);
-    }
-
-    public function edit(Request $request, Auto $auto): Response
+    public function edit(Request $request, Auto $auto): View
     {
         $this->authorize('view', $auto);
 
@@ -91,6 +80,7 @@ class AutoController extends Controller
         ]);
 
         $brands = AutoBrand::query()->select('id', 'name')->orderBy('name')->get();
+        $models = AutoModel::query()->select('id', 'auto_brand_id', 'name')->orderBy('name')->get();
         $colors = Color::query()->select('id', 'name', 'name_ru', 'hex_code')->orderBy('name')->get();
 
         $makeUrl = fn($m, $conv = '') => MediaUrl::url($m, $conv);
@@ -148,7 +138,7 @@ class AutoController extends Controller
             ];
         })->values();
 
-        return Inertia::render('Admin/Autos/Edit', [
+        return view('admin.autos.edit', [
             'auto' => [
                 'id' => $auto->id,
                 'title' => $auto->title,
@@ -171,6 +161,7 @@ class AutoController extends Controller
                 'periods' => $periods,
             ],
             'brands' => $brands,
+            'models' => $models,
             'colors' => $colors,
             'statuses' => $statuses,
             'customers' => Customer::query()->select('id','name')->orderBy('name')->get(),

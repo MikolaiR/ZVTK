@@ -91,7 +91,7 @@ class StorageCostCurrencyTest extends TestCase
         $this->assertDatabaseHas('currency_rates', [
             'currency_code' => 'USD',
             'rate' => 3.25,
-            'rate_date' => '2025-06-01',
+            'rate_date' => now()->toDateTimeString(),
         ]);
 
         Carbon::setTestNow();

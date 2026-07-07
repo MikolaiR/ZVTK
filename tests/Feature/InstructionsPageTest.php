@@ -13,8 +13,6 @@ class InstructionsPageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        config()->set('features.client_blade_enabled', true);
     }
 
     public function test_guest_is_redirected_from_instructions_page(): void

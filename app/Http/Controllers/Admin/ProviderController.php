@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Services\ProviderService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Http\Requests\Admin\Provider\StoreProviderRequest;
 use App\Http\Requests\Admin\Provider\UpdateProviderRequest;
 
@@ -18,7 +17,7 @@ class ProviderController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $showDeleted = (bool) $request->boolean('show_deleted', false);
@@ -28,7 +27,7 @@ class ProviderController extends Controller
             'show_deleted' => $showDeleted,
         ]);
 
-        return Inertia::render('Admin/Providers/Index', [
+        return view('admin.providers.index', [
             'filters' => [
                 'search' => $search,
                 'show_deleted' => $showDeleted,
@@ -47,10 +46,10 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
         $users = $this->providers->getUsersForSelect();
-        return Inertia::render('Admin/Providers/Create', [
+        return view('admin.providers.create', [
             'users' => $users,
         ]);
     }
@@ -61,10 +60,10 @@ class ProviderController extends Controller
         return redirect()->route('admin.providers.index')->with('success', __('Provider created.'));
     }
 
-    public function edit(Provider $provider): Response
+    public function edit(Provider $provider): View
     {
         $users = $this->providers->getUsersForSelect();
-        return Inertia::render('Admin/Providers/Edit', [
+        return view('admin.providers.edit', [
             'provider' => [
                 'id' => $provider->id,
                 'name' => $provider->name,

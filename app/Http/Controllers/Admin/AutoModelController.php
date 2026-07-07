@@ -6,10 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AutoModel;
 use App\Services\AutoModelService;
 use App\Services\AutoBrandService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Http\Requests\Admin\AutoModel\StoreAutoModelRequest;
 use App\Http\Requests\Admin\AutoModel\UpdateAutoModelRequest;
 
@@ -20,7 +19,7 @@ class AutoModelController extends Controller
         private readonly AutoBrandService $brands
     ) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $showDeleted = (bool) $request->boolean('show_deleted', false);
@@ -30,7 +29,7 @@ class AutoModelController extends Controller
             'show_deleted' => $showDeleted,
         ]);
 
-        return Inertia::render('Admin/AutoModels/Index', [
+        return view('admin.auto-models.index', [
             'filters' => [
                 'search' => $search,
                 'show_deleted' => $showDeleted,
@@ -48,10 +47,10 @@ class AutoModelController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
         $brands = $this->brands->getAllActiveForSelect();
-        return Inertia::render('Admin/AutoModels/Create', [
+        return view('admin.auto-models.create', [
             'brands' => $brands,
         ]);
     }
@@ -62,10 +61,10 @@ class AutoModelController extends Controller
         return redirect()->route('admin.auto.models.index')->with('success', __('Model created.'));
     }
 
-    public function edit(AutoModel $model): Response
+    public function edit(AutoModel $model): View
     {
         $brands = $this->brands->getAllActiveForSelect();
-        return Inertia::render('Admin/AutoModels/Edit', [
+        return view('admin.auto-models.edit', [
             'model' => [
                 'id' => $model->id,
                 'name' => $model->name,

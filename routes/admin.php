@@ -12,12 +12,9 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Admin/Home');
-    })->name('home');
+    Route::view('/', 'admin.home')->name('home');
 
     // Users & Roles
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

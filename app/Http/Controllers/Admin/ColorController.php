@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Color;
 use App\Services\ColorService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Http\Requests\Admin\Color\StoreColorRequest;
 use App\Http\Requests\Admin\Color\UpdateColorRequest;
 
@@ -18,7 +17,7 @@ class ColorController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $showDeleted = (bool) $request->boolean('show_deleted', false);
@@ -28,7 +27,7 @@ class ColorController extends Controller
             'show_deleted' => $showDeleted,
         ]);
 
-        return Inertia::render('Admin/Colors/Index', [
+        return view('admin.colors.index', [
             'filters' => [
                 'search' => $search,
                 'show_deleted' => $showDeleted,
@@ -42,9 +41,9 @@ class ColorController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Admin/Colors/Create');
+        return view('admin.colors.create');
     }
 
     public function store(StoreColorRequest $request): RedirectResponse
@@ -53,9 +52,9 @@ class ColorController extends Controller
         return redirect()->route('admin.colors.index')->with('success', __('Color created.'));
     }
 
-    public function edit(Color $color): Response
+    public function edit(Color $color): View
     {
-        return Inertia::render('Admin/Colors/Edit', [
+        return view('admin.colors.edit', [
             'color' => [
                 'id' => $color->id,
                 'name' => $color->name,

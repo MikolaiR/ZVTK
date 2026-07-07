@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\RoleService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\Admin\Role\StoreRoleRequest;
 use App\Http\Requests\Admin\Role\UpdateRoleRequest;
@@ -18,11 +17,11 @@ class RoleController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $paginator = $this->roles->list();
 
-        return Inertia::render('Admin/Roles/Index', [
+        return view('admin.roles.index', [
             'roles' => $paginator->through(fn (Role $r) => [
                 'id' => $r->id,
                 'name' => $r->name,
@@ -31,10 +30,10 @@ class RoleController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
         $permissions = $this->roles->getAllPermissionNames();
-        return Inertia::render('Admin/Roles/Create', [
+        return view('admin.roles.create', [
             'permissions' => $permissions,
         ]);
     }
@@ -45,10 +44,10 @@ class RoleController extends Controller
         return redirect()->route('admin.roles.index')->with('success', __('Role created.'));
     }
 
-    public function edit(Role $role): Response
+    public function edit(Role $role): View
     {
         $permissions = $this->roles->getAllPermissionNames();
-        return Inertia::render('Admin/Roles/Edit', [
+        return view('admin.roles.edit', [
             'role' => [
                 'id' => $role->id,
                 'name' => $role->name,

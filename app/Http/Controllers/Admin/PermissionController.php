@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\PermissionService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\Permission\Models\Permission;
 use App\Http\Requests\Admin\Permission\StorePermissionRequest;
 use App\Http\Requests\Admin\Permission\UpdatePermissionRequest;
@@ -18,11 +17,11 @@ class PermissionController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $paginator = $this->permissions->list();
 
-        return Inertia::render('Admin/Permissions/Index', [
+        return view('admin.permissions.index', [
             'permissions' => $paginator->through(fn (Permission $p) => [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -31,10 +30,10 @@ class PermissionController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
         $roles = $this->permissions->getAllRoleNames();
-        return Inertia::render('Admin/Permissions/Create', [
+        return view('admin.permissions.create', [
             'roles' => $roles,
         ]);
     }
@@ -45,10 +44,10 @@ class PermissionController extends Controller
         return redirect()->route('admin.permissions.index')->with('success', __('Permission created.'));
     }
 
-    public function edit(Permission $permission): Response
+    public function edit(Permission $permission): View
     {
         $roles = $this->permissions->getAllRoleNames();
-        return Inertia::render('Admin/Permissions/Edit', [
+        return view('admin.permissions.edit', [
             'permission' => [
                 'id' => $permission->id,
                 'name' => $permission->name,

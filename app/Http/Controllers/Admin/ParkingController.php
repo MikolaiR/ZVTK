@@ -10,19 +10,18 @@ use App\Http\Requests\Admin\Parking\Prices\UpdatePriceRequest;
 use App\Models\Company;
 use App\Models\Parking;
 use App\Models\Price;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ParkingController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $query = Parking::query()->with('company:id,name')->orderByDesc('id');
         $parkings = $query->paginate(20)->withQueryString();
 
-        return Inertia::render('Admin/Parkings/Index', [
+        return view('admin.parkings.index', [
             'parkings' => $parkings->through(function (Parking $p) {
                 return [
                     'id' => $p->id,
@@ -37,9 +36,9 @@ class ParkingController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Admin/Parkings/Create', [
+        return view('admin.parkings.create', [
             'companies' => Company::query()->select('id','name')->orderBy('name')->get(),
         ]);
     }
@@ -51,7 +50,7 @@ class ParkingController extends Controller
         return redirect()->route('admin.parkings.index')->with('success', __('Parking created.'));
     }
 
-    public function edit(Parking $parking): Response
+    public function edit(Parking $parking): View
     {
         $parking->load(['company:id,name', 'prices' => function ($q) { $q->orderByDesc('date_start'); }]);
         $prices = $parking->prices->map(function (Price $pr) {
@@ -64,7 +63,7 @@ class ParkingController extends Controller
             ];
         })->values();
 
-        return Inertia::render('Admin/Parkings/Edit', [
+        return view('admin.parkings.edit', [
             'parking' => [
                 'id' => $parking->id,
                 'name' => $parking->name,

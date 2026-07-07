@@ -11,8 +11,6 @@ use App\Models\Customer;
 use App\Models\Parking;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Resources\AutoResource;
 use App\Services\Autos\AutoInventoryExportService;
@@ -31,7 +29,7 @@ class AutoController extends Controller
     ) {
     }
 
-    public function index(Request $request): Response|View
+    public function index(Request $request): View
     {
         $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
 
@@ -107,11 +105,7 @@ class AutoController extends Controller
             'parkings' => $parkings,
         ];
 
-        if (config('features.client_blade_enabled')) {
-            return view('client.autos.index', $viewData);
-        }
-
-        return Inertia::render('Autos/Index', $viewData);
+        return view('client.autos.index', $viewData);
     }
 
     public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
@@ -132,7 +126,7 @@ class AutoController extends Controller
         }
     }
 
-    public function show(Request $request, Auto $auto): Response|View
+    public function show(Request $request, Auto $auto): View
     {
         $auto->load([
             'model:id,auto_brand_id,name',
@@ -162,14 +156,10 @@ class AutoController extends Controller
             'actions' => $actions,
         ];
 
-        if (config('features.client_blade_enabled')) {
-            return view('client.autos.show', $viewData);
-        }
-
-        return Inertia::render('Autos/Show', $viewData);
+        return view('client.autos.show', $viewData);
     }
 
-    public function create(): Response|View
+    public function create(): View
     {
         $brands = AutoBrand::query()->select('id', 'name')->orderBy('name')->get();
         $colors = Color::query()->select('id', 'name', 'name_ru', 'hex_code')->orderBy('name')->get();
@@ -179,11 +169,7 @@ class AutoController extends Controller
             'colors' => $colors,
         ];
 
-        if (config('features.client_blade_enabled')) {
-            return view('client.autos.create', $viewData);
-        }
-
-        return Inertia::render('Autos/Create', $viewData);
+        return view('client.autos.create', $viewData);
     }
 
     public function store(CreateRequest $request): RedirectResponse

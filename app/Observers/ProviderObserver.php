@@ -6,18 +6,12 @@ use App\Models\Provider;
 
 class ProviderObserver
 {
-
-    protected function setName(Provider $provider): void
-    {
-        $provider->name = $provider->company->name;
-    }
-
     /**
      * Handle the Provider "created" event.
      */
     public function created(Provider $provider): void
     {
-        $this->setName($provider);
+        //
     }
 
     /**
@@ -25,7 +19,7 @@ class ProviderObserver
      */
     public function updated(Provider $provider): void
     {
-        $this->setName($provider);
+        //
     }
 
     /**

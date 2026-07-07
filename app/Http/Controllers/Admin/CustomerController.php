@@ -6,28 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Customer\StoreCustomerRequest;
 use App\Http\Requests\Admin\Customer\UpdateCustomerRequest;
 use App\Models\Customer;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class CustomerController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $customers = Customer::query()
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('Admin/Customers/Index', [
+        return view('admin.customers.index', [
             'customers' => $customers,
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Admin/Customers/Create');
+        return view('admin.customers.create');
     }
 
     public function store(StoreCustomerRequest $request): RedirectResponse
@@ -36,9 +35,9 @@ class CustomerController extends Controller
         return redirect()->route('admin.customers.index')->with('success', __('Customer created.'));
     }
 
-    public function edit(Customer $customer): Response
+    public function edit(Customer $customer): View
     {
-        return Inertia::render('Admin/Customers/Edit', [
+        return view('admin.customers.edit', [
             'customer' => [
                 'id' => $customer->id,
                 'name' => $customer->name,

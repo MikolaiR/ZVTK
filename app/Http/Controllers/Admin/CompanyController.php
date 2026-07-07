@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Services\CompanyService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Http\Requests\Admin\Company\StoreCompanyRequest;
 use App\Http\Requests\Admin\Company\UpdateCompanyRequest;
 
@@ -18,7 +17,7 @@ class CompanyController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $showDeleted = (bool) $request->boolean('show_deleted', false);
@@ -28,7 +27,7 @@ class CompanyController extends Controller
             'show_deleted' => $showDeleted,
         ]);
 
-        return Inertia::render('Admin/Companies/Index', [
+        return view('admin.companies.index', [
             'filters' => [
                 'search' => $search,
                 'show_deleted' => $showDeleted,
@@ -42,9 +41,9 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Admin/Companies/Create');
+        return view('admin.companies.create');
     }
 
     public function store(StoreCompanyRequest $request): RedirectResponse
@@ -53,9 +52,9 @@ class CompanyController extends Controller
         return redirect()->route('admin.companies.index')->with('success', __('Company created.'));
     }
 
-    public function edit(Company $company): Response
+    public function edit(Company $company): View
     {
-        return Inertia::render('Admin/Companies/Edit', [
+        return view('admin.companies.edit', [
             'company' => [
                 'id' => $company->id,
                 'name' => $company->name,

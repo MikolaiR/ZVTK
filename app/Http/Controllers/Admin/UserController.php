@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Validation\Rule;
 use App\Services\UserService;
 use App\Http\Requests\Admin\User\StoreUserRequest;
@@ -18,7 +17,7 @@ class UserController extends Controller
     public function __construct(private readonly UserService $users)
     {
     }
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $status = (string) $request->query('status', 'all'); // all|active|inactive|deleted
@@ -30,7 +29,7 @@ class UserController extends Controller
             'role' => $role,
         ]);
 
-        return Inertia::render('Admin/Users/Index', [
+        return view('admin.users.index', [
             'filters' => [
                 'search' => $search,
                 'status' => $status,
@@ -82,7 +81,7 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', __('User restored.'));
     }
 
-    public function create(): Response
+    public function create(): View
     {
         $roles = $this->users->getAllRoleNames();
         $permissions = $this->users->getAllPermissionNames();
@@ -90,7 +89,7 @@ class UserController extends Controller
             ->select(['id', 'name'])
             ->orderBy('name')
             ->get();
-        return Inertia::render('Admin/Users/Create', [
+        return view('admin.users.create', [
             'roles' => $roles,
             'permissions' => $permissions,
             'companies' => $companies,
@@ -104,7 +103,7 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', __('User created.'));
     }
 
-    public function edit(User $user): Response
+    public function edit(User $user): View
     {
         $roles = $this->users->getAllRoleNames();
         $permissions = $this->users->getAllPermissionNames();
@@ -112,7 +111,7 @@ class UserController extends Controller
             ->select(['id', 'name'])
             ->orderBy('name')
             ->get();
-        return Inertia::render('Admin/Users/Edit', [
+        return view('admin.users.edit', [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,

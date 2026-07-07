@@ -22,8 +22,6 @@ class AutoInventoryExportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        config()->set('features.client_blade_enabled', true);
     }
 
     public function test_export_button_is_visible_only_for_parking_status(): void

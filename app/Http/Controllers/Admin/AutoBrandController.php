@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AutoBrand;
 use App\Services\AutoBrandService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use App\Http\Requests\Admin\AutoBrand\StoreAutoBrandRequest;
 use App\Http\Requests\Admin\AutoBrand\UpdateAutoBrandRequest;
 
@@ -18,7 +17,7 @@ class AutoBrandController extends Controller
     {
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $search = (string) $request->query('search', '');
         $showDeleted = (bool) $request->boolean('show_deleted', false);
@@ -28,7 +27,7 @@ class AutoBrandController extends Controller
             'show_deleted' => $showDeleted,
         ]);
 
-        return Inertia::render('Admin/AutoBrands/Index', [
+        return view('admin.auto-brands.index', [
             'filters' => [
                 'search' => $search,
                 'show_deleted' => $showDeleted,
@@ -43,9 +42,9 @@ class AutoBrandController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Admin/AutoBrands/Create');
+        return view('admin.auto-brands.create');
     }
 
     public function store(StoreAutoBrandRequest $request): RedirectResponse
@@ -54,9 +53,9 @@ class AutoBrandController extends Controller
         return redirect()->route('admin.auto.brands.index')->with('success', __('Brand created.'));
     }
 
-    public function edit(AutoBrand $brand): Response
+    public function edit(AutoBrand $brand): View
     {
-        return Inertia::render('Admin/AutoBrands/Edit', [
+        return view('admin.auto-brands.edit', [
             'brand' => [
                 'id' => $brand->id,
                 'name' => $brand->name,

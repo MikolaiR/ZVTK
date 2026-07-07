@@ -20,8 +20,6 @@ class ClientBladePagesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        config()->set('features.client_blade_enabled', true);
     }
 
     public function test_authenticated_user_can_open_blade_home_page(): void
