@@ -3,13 +3,13 @@
 use App\Http\Controllers\Api\BrandAndModelController;
 use App\Http\Controllers\Client\AutoController;
 use App\Http\Controllers\Client\AutoTransitionController;
+use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProfileController;
-use App\Services\Client\HomeService;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [HomeService::class, 'index'])->name('home');
+    Route::get('/', HomeController::class)->name('home');
     Route::get('/instructions', function () {
         if (config('features.client_blade_enabled')) {
             return view('client.instructions');
