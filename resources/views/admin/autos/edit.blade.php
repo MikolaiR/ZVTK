@@ -38,6 +38,34 @@
                 this.locationId = '';
             }
         },
+        editModal: false,
+        editPeriod: { id: null, autoId: null, status: '', locationId: '', startedAt: '', endedAt: '', acceptedBy: '', note: '' },
+        editLocationOptions: [],
+        allLocationLists: {
+            '2': {{ $customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values()->toJson() }},
+            '3': {{ $parkings->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->values()->toJson() }},
+            '4': {{ $parkings->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->values()->toJson() }},
+        },
+        openEditPeriod(period) {
+            this.editPeriod = {
+                id: period.id,
+                autoId: period.auto_id,
+                status: String(period.status),
+                locationId: String(period.location_id ?? ''),
+                startedAt: period.started_at ?? '',
+                endedAt: period.ended_at ?? '',
+                acceptedBy: String(period.accepted_by_id ?? ''),
+                note: period.note ?? '',
+            };
+            this.updateEditLocationOptions();
+            this.editModal = true;
+        },
+        updateEditLocationOptions() {
+            this.editLocationOptions = this.allLocationLists[this.editPeriod.status] || [];
+            if (!this.editLocationOptions.find(o => String(o.id) === String(this.editPeriod.locationId))) {
+                this.editPeriod.locationId = '';
+            }
+        },
         init() {
             this.$watch('brandId', () => {
                 if (!this.filteredModels().find(m => String(m.id) === String(this.modelId))) {
@@ -45,6 +73,7 @@
                 }
             });
             this.$watch('status', () => this.updateLocationOptions());
+            this.$watch('editPeriod.status', () => this.updateEditLocationOptions());
             this.updateLocationOptions();
         }
     }">
@@ -286,6 +315,26 @@
                                             <td class="px-4 py-3">{{ $period['ended_at'] ?? '—' }}</td>
                                             <td class="px-4 py-3">{{ $period['accepted_by']['name'] ?? '—' }}</td>
                                             <td class="px-4 py-3 text-right">
+                                                <button type="button"
+                                                    @click="openEditPeriod({{ json_encode([
+                                                        'id' => $period['id'],
+                                                        'auto_id' => $auto['id'],
+                                                        'status' => (string) $period['status'],
+                                                        'location_id' => $period['location_id'],
+                                                        'started_at' => $period['started_at']
+                                                            ? \Illuminate\Support\Str::before($period['started_at'], ' ') .
+                                                                'T' .
+                                                                \Illuminate\Support\Str::after($period['started_at'], ' ')
+                                                            : '',
+                                                        'ended_at' => $period['ended_at']
+                                                            ? \Illuminate\Support\Str::before($period['ended_at'], ' ') .
+                                                                'T' .
+                                                                \Illuminate\Support\Str::after($period['ended_at'], ' ')
+                                                            : '',
+                                                        'accepted_by_id' => $period['accepted_by']['id'] ?? '',
+                                                        'note' => $period['acceptance_note'] ?? '',
+                                                    ]) }})"
+                                                    class="mr-2 text-sm font-medium text-blue-600 hover:text-blue-700">Изменить</button>
                                                 @if (is_null($period['ended_at']))
                                                     <form method="POST"
                                                         action="{{ route('admin.autos.periods.close', [$auto['id'], $period['id']]) }}"
@@ -375,5 +424,95 @@
                 </form>
             </div>
         @endcomponent
+
+        <div x-show="editModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @keydown.escape.window="editModal = false">
+            <div class="w-full max-w-lg rounded-xl bg-white shadow-xl" @click.outside="editModal = false">
+                <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                    <h3 class="text-base font-semibold text-slate-900">Редактировать период</h3>
+                    <button type="button" @click="editModal = false" class="text-slate-400 hover:text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form method="POST" :action="`{{ url('admin/autos/' . $auto['id'] . '/periods') }}/${editPeriod.id}`"
+                    x-ref="editForm">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Статус <span
+                                    class="text-red-500">*</span></label>
+                            <select name="status" x-model="editPeriod.status" required
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600">
+                                <option value="">Выберите статус</option>
+                                @foreach ($statuses as $statusItem)
+                                    <option value="{{ $statusItem['value'] }}">{{ $statusItem['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="sm:col-span-2" x-show="editLocationOptions.length > 0">
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Локация</label>
+                            <select name="location_id" x-model="editPeriod.locationId"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600">
+                                <option value="">Выберите локацию</option>
+                                <template x-for="opt in editLocationOptions" :key="opt.id">
+                                    <option :value="String(opt.id)"
+                                        :selected="String(opt.id) === String(editPeriod.locationId)" x-text="opt.name">
+                                    </option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Начало <span
+                                    class="text-red-500">*</span></label>
+                            <input type="datetime-local" name="started_at" x-model="editPeriod.startedAt" required
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Окончание</label>
+                            <input type="datetime-local" name="ended_at" x-model="editPeriod.endedAt"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Принял</label>
+                            <select name="accepted_by_user_id" x-model="editPeriod.acceptedBy"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600">
+                                <option value="">— Не указан —</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Примечание</label>
+                            <input type="text" name="note" x-model="editPeriod.note" maxlength="1000"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600" />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
+                        <button type="button" @click="editModal = false"
+                            class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Отмена
+                        </button>
+                        <button type="submit"
+                            class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                            Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection
